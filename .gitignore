@@ -3,3 +3,7 @@
 .vscode
 *.tmp
 .workbuddy/
+# 仅推送 index.html 与 gwm_*.html，忽略其余 HTML
+*.html
+!index.html
+!gwm_*.html
