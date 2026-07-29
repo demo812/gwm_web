@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <base href="./">
+    <title>长城辅助驾驶保障服务平台 - 投保记录</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <script>
+        if (window.self !== window.top) {
+            document.documentElement.classList.add('in-iframe');
+        }
+    </script>
+    <style>
+        html.in-iframe #sidebar, html.in-iframe .header, html.in-iframe #tabBar,
+        html.in-iframe #sidebar-overlay, html.in-iframe #welcomeBg, html.in-iframe .welcome-bg.show {
+            display: none !important;
+        }
+        html.in-iframe #contentWrapper, html.in-iframe #contentWrapper.hidden {
+            display: block !important;
+        }
+        html.in-iframe .main-wrapper {
+            margin-left: 0 !important; margin-top: 0 !important;
+        }
+    </style>
+    <script>
+
+        if (window.self !== window.top) {
+            document.addEventListener('DOMContentLoaded', function() {
+                var s=document.getElementById('sidebar'),h=document.querySelector('.header'),t=document.getElementById('tabBar'),
+                m=document.querySelector('.main-wrapper'),o=document.getElementById('sidebar-overlay'),w=document.getElementById('contentWrapper'),g=document.getElementById('welcomeBg');
+                if(s)s.style.setProperty('display','none','important');if(h)h.style.setProperty('display','none','important');if(t)t.style.setProperty('display','none','important');if(o)o.style.setProperty('display','none','important');
+                if(m){m.style.setProperty('margin-left','0','important');m.style.setProperty('margin-top','0','important');}
+                if(w){w.classList.remove('hidden');w.style.setProperty('display','block','important');}
+                if(g){g.classList.remove('show');g.style.setProperty('display','none','important');}
+                document.body.classList.remove('sidebar-collapsed');
+            });
+        }
+    </script>
+</head>
+<body>
+<div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<aside id="sidebar" class="sidebar">
+<div class="sidebar-logo"><img src="https://www.gwm.com.cn/favicon.ico" alt="logo" onerror="this.style.display='none'"><span>长城汽车</span></div>
+<nav class="sidebar-nav"><ul>
+<li><a href="gwm_web_dashboard.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 5"/></svg><span>数据概览</span></a></li>
+<li class="has-submenu "><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="2"/><path d="M8 21l4-3 4 3"/></svg><span>权益管理</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '权益车辆', 'gwm_web_equity_vehicle.html', 'equity_vehicle')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="9" rx="2"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg><span>权益车辆</span></a></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '车型配置', 'gwm_web_model_config.html', 'model_config')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>车型配置</span></a></li>
+<li><a href="gwm_web_poster.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 16"/></svg><span>权益海报</span></a></li>
+</ul></li>
+<li class="has-submenu open"><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>投保管理</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '预投记录', 'gwm_web_pre_insurance.html', 'pre_insurance')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>预投记录</span></a></li>
+<li class="active"><a href="javascript:void(0);" onclick="return openMenuTab(this, '投保记录', 'gwm_web_insurance_record.html', 'insurance_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg><span>投保记录</span></a></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '异常记录', 'gwm_web_exception_record.html', 'exception_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>异常记录</span></a></li>
+</ul></li>
+<li class="has-submenu"><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>保单管理</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li><a href="javascript:void(0);" onclick="return openMenuTab(this, '保单记录', 'gwm_web_policy.html', 'policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>保单记录</span></a></li>
+<li><a href="javascript:void(0);" onclick="return openMenuTab(this, '下载记录', 'gwm_web_download.html', 'download')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>下载记录</span></a></li>
+</ul></li>
+<li><a href="gwm_web_return.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span>退车管理</span></a></li>
+<li class="has-submenu"><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>申请管理</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li><a href="gwm_web_application.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>申请记录</span></a></li>
+<li><a href="javascript:void(0);" onclick="return openMenuTab(this, '协议政策', 'gwm_web_agreement_policy.html', 'agreement_policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>协议政策</span></a></li>
+</ul></li>
+<li class="has-submenu "><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>享权管理</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权记录', 'gwm_web_enjoyment_record.html', 'enjoyment_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg><span>享权记录</span></a></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权说明', 'gwm_web_enjoyment_desc.html', 'enjoyment_desc')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>享权说明</span></a></li>
+</ul></li>
+<li class="has-submenu"><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg><span>异常工单</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li><a href="javascript:void(0);" onclick="return openMenuTab(this, '申请工单', 'gwm_web_abnormal_workorder.html', 'abnormal_workorder')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg><span>申请工单</span></a></li>
+</ul></li>
+<li><a href="gwm_web_export.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>导出管理</span></a></li>
+<li class="has-submenu "><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>存证管理</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据存证', 'gwm_web_data_evidence.html', 'data_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>数据存证</span></a></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '报告存证', 'gwm_web_report_evidence.html', 'report_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>报告存证</span></a></li>
+</ul></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据校验', 'gwm_web_data_verify.html', 'data_verify')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>数据校验</span></a></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '模型管理', 'gwm_web_model_manage.html', 'model_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg><span>模型管理</span></a></li>
+<li class="has-submenu "><a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>系统管理</span><i class="arrow">&#9662;</i></a>
+<ul class="submenu">
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '用户管理', 'gwm_web_user_manage.html', 'user_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>用户管理</span></a></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '角色权限', 'gwm_web_role_permission.html', 'role_permission')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>角色权限</span></a></li>
+<li><a href="javascript:void(0);" onclick="return onMenuClick(this, false)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>邮件通知</span></a></li>
+</ul></li>
+<li class=""><a href="javascript:void(0);" onclick="return openMenuTab(this, '日志管理', 'gwm_web_log_management.html', 'log_management')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>日志管理</span></a></li>
+</ul></nav></aside>
+<div class="main-wrapper">
+<header class="header">
+<div class="header-left-icons">
+<button class="header-icon-btn" onclick="toggleSidebar()" title="收起菜单">&#9776;</button>
+<button class="header-icon-btn" onclick="toggleFullscreen()" title="全屏显示">&#9974;</button>
+</div>
+<div class="header-title"></div>
+<div class="header-user"><span class="user-name">张三 zhangsan</span><i class="user-arrow">&#9662;</i></div>
+</header>
+<div class="tab-bar" id="tabBar"><div class="tab-item active" id="pageTab">投保记录 <span class="tab-close" onclick="closePage()">&times;</span></div></div>
+<main class="main-content"><div class="content-wrapper" id="contentWrapper">
+<div class="filter-section"><div class="filter-row"><div class="filter-item"><label>投保日期:</label><input type="text" class="datetime-range-input" placeholder="开始时间 - 结束时间" readonly></div><div class="filter-item"><label>VIN:</label><input type="text" placeholder="请输入VIN"></div><div class="filter-item"><label>品牌车型四码:</label><select><option>请选择品牌车型四码</option><option>哈弗H7L_CC64</option><option>WEY M83_CCWM</option></select></div></div><div class="filter-row"><div class="filter-item"><label>保单号:</label><input type="text" placeholder="请输入保单号"></div><div class="filter-item"><label>权益开始日期:</label><input type="text" class="datetime-range-input" placeholder="开始时间 - 结束时间" readonly></div><div class="filter-item"><label>批单号:</label><input type="text" placeholder="请输入批单号"></div></div><div class="filter-row filter-row-last"><div class="filter-item"><label>创建日期:</label><input type="text" class="datetime-range-input" placeholder="开始时间 - 结束时间" readonly></div><div class="filter-item"></div><div class="filter-item filter-buttons"><button class="btn btn-default" onclick="resetFilter()">重置</button><button class="btn btn-primary" onclick="doSearch()">查询</button></div></div></div><div class="action-bar"><div class="status-tabs"><span class="tab active" onclick="switchTab(this,'all')">全部</span><span class="tab" onclick="switchTab(this,'pending')">待审核</span><span class="tab" onclick="switchTab(this,'success')">成功</span><span class="tab" onclick="switchTab(this,'failed')">失败</span></div><div class="action-buttons"><button class="btn btn-primary" onclick="createExport()">导出表</button></div></div><div class="table-wrapper"><table class="data-table" id="dataTable"><thead><tr><th class="col-checkbox"><input type="checkbox" id="checkAll" onclick="toggleCheckAll()"></th><th>投保时间</th><th>VIN</th><th>品牌</th><th>车系</th><th>车型</th><th>车型四码</th><th>投保状态</th><th>保司</th><th>保单号</th><th>批单号</th></tr></thead><tbody><tr><td><input type="checkbox"></td><td>2026-07-17 16:...</td><td>LGW2B7JC39H000001</td><td>哈弗</td><td>H7L</td><td>蓝标哈弗H7L</td><td>哈弗H7L_CC6...</td><td>成功</td><td>人保财险</td><td>polic202607...</td><td>endor2026...</td></tr><tr><td><input type="checkbox"></td><td>2026-07-17 12:...</td><td>LGW2B7JC39H000002</td><td>哈弗</td><td>H7L</td><td>蓝标哈弗H7L</td><td>哈弗H7L_CC6...</td><td>失败</td><td>人保财险</td><td>-</td><td>-</td></tr><tr><td><input type="checkbox"></td><td>2026-07-16 19:...</td><td>LGW2B7JC39H000003</td><td>哈弗</td><td>H7L</td><td>蓝标哈弗H7L</td><td>哈弗H7L_CC6...</td><td>成功</td><td>人保财险</td><td>polic202510...</td><td>endor2025...</td></tr><tr><td><input type="checkbox"></td><td>2026-07-16 18:...</td><td>LGW2B7JC39H000004</td><td>哈弗</td><td>H7L</td><td>蓝标哈弗H7L</td><td>哈弗H7L_CC6...</td><td>成功</td><td>人保财险</td><td>polic202510...</td><td>endor2025...</td></tr><tr><td><input type="checkbox"></td><td>2026-07-16 16:...</td><td>LGW2B7JC39H000005</td><td>哈弗</td><td>H7L</td><td>蓝标哈弗H7L</td><td>哈弗H7L_CC6...</td><td>待审核</td><td>人保财险</td><td>-</td><td>-</td></tr><tr><td><input type="checkbox"></td><td>2026-07-15 12:...</td><td>LGW2B7JC39H000006</td><td>WEY</td><td>M83</td><td>M83测试车型</td><td>WEY M83_CCWM...</td><td>失败</td><td>人保财险</td><td>-</td><td>-</td></tr><tr><td><input type="checkbox"></td><td>2026-07-15 12:...</td><td>LGW2B7JC39H000007</td><td>WEY</td><td>V71</td><td>WEY V71</td><td>WEY V71_CC6490...</td><td>失败</td><td>人保财险</td><td>-</td><td>-</td></tr><tr><td><input type="checkbox"></td><td>2026-07-15 12:...</td><td>LGW2B7JC39H000008</td><td>WEY</td><td>DE09</td><td>WEY DE09</td><td>WEY DE09_CC65...</td><td>失败</td><td>人保财险</td><td>-</td><td>-</td></tr><tr><td><input type="checkbox"></td><td>2026-07-15 12:...</td><td>LGW2B7JC39H000009</td><td>WEY</td><td>M83</td><td>M83测试车型</td><td>WEY M83_CCWM...</td><td>失败</td><td>人保财险</td><td>-</td><td>-</td></tr><tr><td><input type="checkbox"></td><td>2026-07-15 12:...</td><td>LGW2B7JC39H000010</td><td>WEY</td><td>M83</td><td>M83测试车型</td><td>WEY M83_CCWM...</td><td>失败</td><td>人保财险</td><td>-</td><td>-</td></tr></tbody></table></div><div class="pagination-wrapper"><div class="pagination">
+<span class="total">共 10 条</span>
+<select class="page-size"><option>10条/页</option><option>20条/页</option><option>50条/页</option></select>
+<button class="page-btn" disabled>&lt;</button><button class="page-btn active">1</button><button class="page-btn" disabled>&gt;</button>
+<span>前往</span><input type="text" class="page-input" value="1"><span>页</span>
+</div></div>
+</div>
+<div class="welcome-bg" id="welcomeBg"><div class="welcome-illustration">
+<div class="welcome-bg-screen"></div><div class="welcome-bg-screen2"></div>
+<div class="welcome-screen"><div class="welcome-screen-bar"></div><div class="welcome-screen-bar2"></div><div class="welcome-screen-bar3"></div></div>
+<div class="welcome-deco welcome-deco-1">&#10022;</div><div class="welcome-deco welcome-deco-2">&#9679;</div><div class="welcome-deco welcome-deco-3">&#11201;</div><div class="welcome-deco welcome-deco-4">&#10010;</div><div class="welcome-deco welcome-deco-5">&#11200;</div>
+</div><div class="welcome-text"><div class="welcome-line"></div><span>WELCOME</span><div class="welcome-line"></div></div></div>
+</main></div>
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="./js/app.js"></script>
+</body></html>

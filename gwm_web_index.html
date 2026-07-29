@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <base href="./">
+    <title>长城辅助驾驶保障服务平台</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        /* main.html specific styles */
+        .main-content {
+            position: relative;
+            padding: 0;
+            overflow: hidden;
+        }
+        .content-iframe {
+            width: 100%;
+            height: calc(100vh - 96px);
+            border: none;
+            display: none;
+        }
+        .welcome-bg.show {
+            display: flex !important;
+        }
+        .welcome-bg {
+            display: none;
+        }
+        /* Tab close all button — 固定右侧，不随 Tab 滚动 */
+        .tab-close-all {
+            margin-left: 8px;
+            padding: 0 12px;
+            font-size: 12px;
+            color: #333;
+            background: #fff;
+            border: 1px solid #333;
+            border-radius: 2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            height: 24px;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+        .tab-close-all:hover { background: #f5f5f5; }
+        /* Tab 滚动区域 */
+        .tab-scroll {
+            flex: 1; min-width: 0;
+            overflow-x: auto; overflow-y: hidden;
+            display: flex; align-items: center;
+            gap: 2px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .tab-scroll::-webkit-scrollbar { display: none; }
+        /* tab-bar 始终可见（由 JS 控制 has-tabs） */
+        .tab-bar { display: none; }
+        .tab-bar.has-tabs { display: flex; }
+        /* 父框架遮罩：覆盖菜单栏、顶部栏、tab-bar 及主页面区域 */
+        .parent-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+        }
+        body.iframe-modal-open .parent-overlay {
+            display: block;
+        }
+        body.iframe-modal-open .content-iframe {
+            position: relative;
+            z-index: 3000;
+        }
+    </style>
+</head>
+<body>
+    <!-- 移动端遮罩 -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 左侧菜单 -->
+<aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://www.gwm.com.cn/favicon.ico" alt="logo" onerror="this.style.display='none'">
+            <span>长城汽车</span>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据概览', 'gwm_web_dashboard.html', 'dashboard')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 5"/></svg><span>数据概览</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="2"/><path d="M8 21l4-3 4 3"/></svg><span>权益管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '权益车辆', 'gwm_web_equity_vehicle.html', 'equity_vehicle')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="9" rx="2"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg><span>权益车辆</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '车型配置', 'gwm_web_model_config.html', 'model_config')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>车型配置</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '权益海报', 'gwm_web_poster.html', 'poster')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 16"/></svg><span>权益海报</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>投保管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '预投记录', 'gwm_web_pre_insurance.html', 'pre_insurance')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>预投记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '投保记录', 'gwm_web_insurance_record.html', 'insurance_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg><span>投保记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '异常记录', 'gwm_web_exception_record.html', 'exception_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>异常记录</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>保单管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '保单记录', 'gwm_web_policy.html', 'policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>保单记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '下载记录', 'gwm_web_download.html', 'download')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>下载记录</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '退车管理', 'gwm_web_return.html', 'return')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span>退车管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>申请管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '申请记录', 'gwm_web_application.html', 'application')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>申请记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '协议政策', 'gwm_web_agreement_policy.html', 'agreement_policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>协议政策</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>享权管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权记录', 'gwm_web_enjoyment_record.html', 'enjoyment_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg><span>享权记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权说明', 'gwm_web_enjoyment_desc.html', 'enjoyment_desc')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>享权说明</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg><span>异常工单</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '申请工单', 'gwm_web_abnormal_workorder.html', 'abnormal_workorder')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg><span>申请工单</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '导出记录', 'gwm_web_export.html', 'export')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>导出管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>存证管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据存证', 'gwm_web_data_evidence.html', 'data_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>数据存证</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '报告存证', 'gwm_web_report_evidence.html', 'report_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>报告存证</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据校验', 'gwm_web_data_verify.html', 'data_verify')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>数据校验</span></a></li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '模型管理', 'gwm_web_model_manage.html', 'model_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg><span>模型管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>系统管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '用户管理', 'gwm_web_user_manage.html', 'user_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>用户管理</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '角色权限', 'gwm_web_role_permission.html', 'role_permission')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>角色权限</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return onMenuClick(this, false)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>邮件通知</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '日志管理', 'gwm_web_log_management.html', 'log_management')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>日志管理</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+    <!-- 主内容区 -->
+    <div class="main-wrapper">
+        <!-- 顶部Header -->
+        <header class="header">
+            <div class="header-left-icons">
+                <button class="header-icon-btn" onclick="toggleSidebar()" title="收起菜单">&#9776;</button>
+                <button class="header-icon-btn" onclick="toggleFullscreen()" title="全屏显示">&#9974;</button>
+            </div>
+            <div class="header-title"></div>
+            <div class="header-user">
+                <span class="user-name">张三 zhangsan</span>
+                <i class="user-arrow">&#9662;</i>
+            </div>
+        </header>
+
+        <!-- Tab 标签栏 -->
+        <div class="tab-bar" id="tabBar"></div>
+
+        <!-- 页面内容 -->
+        <main class="main-content">
+            <iframe class="content-iframe" id="contentFrame"></iframe>
+            <div class="welcome-bg" id="welcomeBg">
+                <div class="welcome-illustration">
+                    <div class="welcome-bg-screen"></div>
+                    <div class="welcome-bg-screen2"></div>
+                    <div class="welcome-screen">
+                        <div class="welcome-screen-bar"></div>
+                        <div class="welcome-screen-bar2"></div>
+                        <div class="welcome-screen-bar3"></div>
+                    </div>
+                    <div class="welcome-deco welcome-deco-1">&#10022;</div>
+                    <div class="welcome-deco welcome-deco-2">&#9679;</div>
+                    <div class="welcome-deco welcome-deco-3">&#11201;</div>
+                    <div class="welcome-deco welcome-deco-4">&#10010;</div>
+                    <div class="welcome-deco welcome-deco-5">&#11200;</div>
+                </div>
+                <div class="welcome-text">
+                    <div class="welcome-line"></div>
+                    <span>WELCOME</span>
+                    <div class="welcome-line"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <!-- 父框架遮罩：iframe 内弹窗打开时覆盖菜单栏/顶部栏/tab-bar -->
+    <div id="parentOverlay" class="parent-overlay"></div>
+
+    <script src="./js/app.js"></script>
+    <script>
+        // ===== Tab Management =====
+        let tabs = [];
+        let activeTabId = null;
+
+        function openMenuTab(el, title, url, tabId) {
+            var e = event || window.event;
+            if (e && e.preventDefault) e.preventDefault();
+            // Check if already open
+            const existing = tabs.find(t => t.id === tabId);
+            if (existing) {
+                activateTab(tabId);
+                return false;
+            }
+            tabs.push({ id: tabId, title, url });
+            renderTabs();
+            activateTab(tabId);
+            return false;
+        }
+
+        function openTab(title, url, tabId) {
+            const existing = tabs.find(t => t.id === tabId);
+            if (existing) {
+                activateTab(tabId);
+                return;
+            }
+            tabs.push({ id: tabId, title, url });
+            renderTabs();
+            activateTab(tabId);
+        }
+
+        function closeTab(tabId) {
+            tabs = tabs.filter(t => t.id !== tabId);
+            renderTabs();
+            if (tabs.length === 0) {
+                showWelcome();
+            } else if (activeTabId === tabId) {
+                activateTab(tabs[tabs.length - 1].id);
+            }
+        }
+
+        function closeAllTabs() {
+            tabs = [];
+            renderTabs();
+            showWelcome();
+        }
+
+        function activateTab(tabId) {
+            activeTabId = tabId;
+            const tab = tabs.find(t => t.id === tabId);
+            if (tab) {
+                document.getElementById('contentFrame').src = tab.url;
+            }
+            showIframe();
+            renderTabs();
+        }
+
+        function showIframe() {
+            document.getElementById('contentFrame').style.display = 'block';
+            document.getElementById('welcomeBg').style.display = 'none';
+        }
+
+        function showWelcome() {
+            document.getElementById('contentFrame').style.display = 'none';
+            document.getElementById('contentFrame').src = '';
+            document.getElementById('welcomeBg').style.display = 'flex';
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('tabBar');
+            if (tabs.length === 0) {
+                container.classList.remove('has-tabs');
+                container.innerHTML = '';
+                return;
+            }
+            container.classList.add('has-tabs');
+
+            // 构建 Tab 项（放入可滚动容器）
+            let tabsHtml = '';
+            tabs.forEach(tab => {
+                const active = tab.id === activeTabId ? 'active' : '';
+                tabsHtml += `<div class="tab-item ${active}" data-tab-id="${tab.id}" onclick="activateTab('${tab.id}')">${tab.title} <span class="tab-close" onclick="event.stopPropagation(); closeTab('${tab.id}')">&times;</span></div>`;
+            });
+
+            // 结构：tab-scroll（滚动区） + tab-close-all（固定右侧）
+            container.innerHTML =
+                '<div class="tab-scroll">' + tabsHtml + '</div>' +
+                '<div class="tab-close-all" onclick="closeAllTabs()">关闭所有</div>';
+
+            // 自动滚动到当前激活的 Tab
+            scrollToActiveTab();
+        }
+
+        // 滚动到激活的 Tab，确保其在可视区域内
+        function scrollToActiveTab() {
+            var scrollWrap = document.querySelector('.tab-scroll');
+            if (!scrollWrap) return;
+            var activeEl = scrollWrap.querySelector('.tab-item.active');
+            if (!activeEl) return;
+
+            var wrapRect = scrollWrap.getBoundingClientRect();
+            var elRect = activeEl.getBoundingClientRect();
+
+            // 如果激活 Tab 在可视区域左侧或右侧之外，则滚动到可见位置
+            if (elRect.left < wrapRect.left) {
+                scrollWrap.scrollLeft += elRect.left - wrapRect.left - 4; // 左侧留 4px 边距
+            } else if (elRect.right > wrapRect.right) {
+                scrollWrap.scrollLeft += elRect.right - wrapRect.right + 4; // 右侧留 4px 边距
+            }
+        }
+
+        // Override onMenuClick for main.html
+        function onMenuClick(el, hasPage) {
+            var e = event || window.event;
+            if (e && e.preventDefault) e.preventDefault();
+            if (!hasPage) {
+                showToast('暂无数据');
+            }
+            return false;
+        }
+
+        // ===== 全屏切换 =====
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // ===== 监听 iframe 内弹窗，同步显示父框架遮罩 =====
+        function checkIframeModal() {
+            const iframe = document.getElementById('contentFrame');
+            if (!iframe) return;
+            try {
+                const doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+                if (!doc) {
+                    document.body.classList.remove('iframe-modal-open');
+                    return;
+                }
+                const modals = doc.querySelectorAll('.modal, .modal-overlay');
+                let visible = false;
+                modals.forEach(function(el) {
+                    const style = el.style;
+                    const cls = el.classList;
+                    if (cls.contains('show') || style.display === 'flex' || style.display === 'block') {
+                        visible = true;
+                    }
+                });
+                if (visible) {
+                    document.body.classList.add('iframe-modal-open');
+                } else {
+                    document.body.classList.remove('iframe-modal-open');
+                }
+            } catch (e) {
+                document.body.classList.remove('iframe-modal-open');
+            }
+        }
+
+        function observeIframeModal() {
+            const iframe = document.getElementById('contentFrame');
+            if (!iframe) return;
+            iframe.addEventListener('load', function() {
+                try {
+                    const doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+                    if (!doc || !doc.body) return;
+                    if (iframe._modalObserver) iframe._modalObserver.disconnect();
+                    const observer = new MutationObserver(function() {
+                        checkIframeModal();
+                    });
+                    observer.observe(doc.body, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['style', 'class']
+                    });
+                    iframe._modalObserver = observer;
+                    checkIframeModal();
+                    // 向iframe注入会话活动监控脚本
+                    injectIframeSessionMonitor(iframe);
+                } catch (e) {}
+            });
+            // 兜底轮询，每 300ms 检查一次
+            if (iframe._modalPoll) clearInterval(iframe._modalPoll);
+            iframe._modalPoll = setInterval(checkIframeModal, 300);
+        }
+
+        // ===== 侧边栏子菜单展开/收起 =====
+        function toggleSubmenu(el) {
+            var e = event || window.event;
+            if (e && e.preventDefault) e.preventDefault();
+            const li = el.parentElement;
+            li.classList.toggle('open');
+            return false;
+        }
+
+        // ===== 全局 Toast（整页顶部居中）=====
+        var _globalToastTimer = null;
+        function showGlobalToast(msg) {
+            var toast = document.getElementById('toast');
+            if (!toast) return;
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(_globalToastTimer);
+            _globalToastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2500);
+        }
+
+        // ===== 向iframe注入会话活动监控脚本 =====
+        function injectIframeSessionMonitor(iframe) {
+            try {
+                const doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+                if (!doc || !doc.head) return;
+                if (doc.getElementById('session-monitor-script')) return;
+                const script = doc.createElement('script');
+                script.id = 'session-monitor-script';
+                script.textContent = '(function(){function n(){try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:"session-activity"},"*")}catch(e){}if(localStorage.getItem("loginTime"))localStorage.setItem("lastActivity",Date.now().toString())}["click","keydown","mousemove","scroll"].forEach(function(e){document.addEventListener(e,n,{passive:true})})})();';
+                doc.head.appendChild(script);
+            } catch (e) {}
+        }
+
+        // 接收iframe发来的活动通知
+        window.addEventListener('message', function(e) {
+            if (e.data && e.data.type === 'session-activity') {
+                if (localStorage.getItem('loginTime')) {
+                    localStorage.setItem('lastActivity', Date.now().toString());
+                }
+            }
+        });
+
+        // Show welcome by default
+        document.addEventListener('DOMContentLoaded', function() {
+            showWelcome();
+            observeIframeModal();
+        });
+    </script>
+</body>
+</html>

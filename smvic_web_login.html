@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>辅助驾驶保障服务平台（检测端）- 登录</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #333; }
+        a { text-decoration: none; color: inherit; }
+        input, button { font-family: inherit; font-size: inherit; outline: none; }
+
+        .login-page {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            background: #e8ecf1;
+        }
+        .login-header {
+            height: 56px; background: #003366;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .login-header h1 {
+            color: #fff; font-size: 20px; font-weight: 500; letter-spacing: 2px;
+        }
+        .login-body {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 40px 20px;
+        }
+        .login-card {
+            display: flex; width: 800px; min-height: 460px;
+            background: #fff; border-radius: 8px; overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .login-brand {
+            width: 360px; background: #c9d8e9;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px; gap: 30px;
+        }
+        .brand-logo { width: 120px; height: 120px; }
+        .brand-name {
+            font-size: 28px; font-weight: 700;
+            color: #003366; letter-spacing: 4px;
+        }
+        .brand-tags {
+            display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
+        }
+        .brand-tag {
+            width: 64px; height: 64px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; color: #fff; font-weight: 500;
+        }
+        .brand-tag.blue { background: #003366; }
+        .brand-tag.cyan { background: #00a8e8; }
+        .brand-tag.red { background: #d6000f; }
+        .brand-tag.gray { background: #8c9ba5; }
+
+        .login-form-wrap {
+            flex: 1; padding: 60px 50px;
+            display: flex; flex-direction: column; justify-content: center;
+        }
+        .login-form-title {
+            font-size: 18px; font-weight: 600; color: #333; margin-bottom: 36px;
+        }
+        .login-form { display: flex; flex-direction: column; gap: 20px; }
+
+        .form-field {
+            display: flex; align-items: center; gap: 12px;
+        }
+        .form-field label {
+            width: 50px; font-size: 14px; color: #666;
+            text-align: right; white-space: nowrap; flex-shrink: 0;
+        }
+        .form-field .input-wrap {
+            flex: 1; position: relative;
+        }
+        .form-field .input-wrap input {
+            width: 100%; height: 40px; padding: 0 40px 0 12px;
+            border: 1px solid #d9d9d9; border-radius: 4px;
+            font-size: 14px; color: #333; box-sizing: border-box;
+        }
+        .form-field .input-wrap input:focus {
+            border-color: #003366; outline: none;
+        }
+        .form-field .input-wrap input::placeholder { color: #bbb; }
+
+        .pwd-toggle {
+            position: absolute; right: 6px; top: 50%;
+            transform: translateY(-50%);
+            width: 32px; height: 32px;
+            border: none; background: none;
+            cursor: pointer; padding: 4px;
+            display: flex; align-items: center; justify-content: center;
+            color: #999; border-radius: 4px;
+        }
+        .pwd-toggle:hover { color: #333; background: #f0f0f0; }
+        .pwd-toggle svg { width: 18px; height: 18px; }
+        .pwd-toggle .eye-on { display: none; }
+
+        .login-btn {
+            width: 100%; height: 40px;
+            background: #003366; color: #fff;
+            border: none; border-radius: 4px;
+            font-size: 15px; font-weight: 500;
+            cursor: pointer; transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .login-btn:hover { background: #002244; }
+        .login-btn:disabled { background: #8c9ba5; cursor: not-allowed; }
+        .login-error { color: #d6000f; font-size: 13px; min-height: 18px; text-align: center; }
+        .login-info { color: #999; font-size: 13px; text-align: center; margin-top: 8px; }
+        .login-footer { text-align: center; padding: 16px; font-size: 12px; color: #999; }
+
+        /* 弹窗 */
+        .modal-overlay {
+            display: none; position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 9999;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 8px;
+            padding: 28px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        }
+        .modal-box h3 {
+            font-size: 16px; font-weight: 600; color: #333;
+            margin-bottom: 12px; text-align: center;
+        }
+        .modal-box .subtitle {
+            font-size: 14px; color: #d6000f; line-height: 1.6;
+            margin-bottom: 20px; text-align: center;
+        }
+        .modal-buttons {
+            display: flex; justify-content: center; gap: 12px; margin-top: 18px;
+        }
+        .btn {
+            padding: 8px 24px; border-radius: 4px;
+            font-size: 14px; cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .btn-primary { background: #003366; color: #fff; border-color: #003366; }
+        .btn-default { background: #fff; color: #666; border-color: #d9d9d9; }
+        .btn:hover { opacity: 0.9; }
+
+        /* 修改密码弹窗 */
+        #pwdModal .modal-box { width: 460px; }
+        .pwd-form .form-row {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+        }
+        .pwd-form .form-row label {
+            width: 90px; font-size: 14px; color: #666; text-align: right; flex-shrink: 0;
+        }
+        .pwd-form .form-row .input-wrap {
+            flex: 1; position: relative;
+        }
+        .pwd-form .form-row .input-wrap input {
+            width: 100%; height: 36px; padding: 0 40px 0 10px;
+            border: 1px solid #d9d9d9; border-radius: 4px;
+            font-size: 14px; box-sizing: border-box;
+        }
+        .pwd-form .form-row .input-wrap input:focus {
+            border-color: #003366; outline: none;
+        }
+        .pwd-form .form-row .pwd-toggle {
+            position: absolute; right: 6px; top: 50%;
+            transform: translateY(-50%);
+            width: 32px; height: 32px;
+            border: none; background: none;
+            cursor: pointer; padding: 4px;
+            display: flex; align-items: center; justify-content: center;
+            color: #999; border-radius: 4px;
+        }
+        .pwd-form .form-row .pwd-toggle:hover { color: #333; background: #f0f0f0; }
+        .pwd-form .form-row .pwd-toggle svg { width: 16px; height: 16px; }
+        .pwd-form .form-row .pwd-toggle .eye-on { display: none; }
+        .pwd-error {
+            color: #d6000f; font-size: 13px;
+            margin-left: 102px; min-height: 18px;
+        }
+
+        #alertModal .modal-box { width: 380px; }
+        #alertModal .modal-box p {
+            font-size: 14px; color: #666; line-height: 1.6;
+            margin-bottom: 20px; text-align: center;
+        }
+        #sessionModal .modal-box { width: 380px; }
+        #sessionModal .modal-box p {
+            font-size: 14px; color: #666; line-height: 1.6;
+            margin-bottom: 20px; text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .login-card { flex-direction: column; width: 100%; max-width: 400px; }
+            .login-brand { width: 100%; min-height: 180px; padding: 24px; }
+            .brand-logo { width: 80px; height: 80px; }
+            .brand-name { font-size: 20px; }
+            .brand-tag { width: 48px; height: 48px; font-size: 12px; }
+            .login-form-wrap { padding: 32px 24px; }
+            #pwdModal .modal-box { width: 90%; max-width: 380px; }
+        }
+    </style>
+</head>
+<body class="login-page">
+    <header class="login-header">
+        <h1>辅助驾驶保障服务平台（检测端）</h1>
+    </header>
+
+    <main class="login-body">
+        <div class="login-card">
+            <div class="login-brand">
+                <svg class="brand-logo" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="60,8 102,32 102,78 60,102 18,78 18,32" fill="none" stroke="#003366" stroke-width="4" stroke-linejoin="round"/>
+                    <polygon points="60,22 85,38 85,65 60,80 35,65 35,38" fill="none" stroke="#003366" stroke-width="3" stroke-linejoin="round"/>
+                    <line x1="60" y1="80" x2="60" y2="95" stroke="#d6000f" stroke-width="4" stroke-linecap="round"/>
+                    <polyline points="50,88 60,96 70,88" fill="none" stroke="#d6000f" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <div class="brand-name">SMVIC</div>
+                <div class="brand-tags">
+                    <span class="brand-tag blue">激情</span>
+                    <span class="brand-tag cyan">联想</span>
+                    <span class="brand-tag red">协作</span>
+                    <span class="brand-tag gray">创新</span>
+                </div>
+            </div>
+
+            <div class="login-form-wrap">
+                <h2 class="login-form-title">快速登录</h2>
+                <form class="login-form" id="loginForm" onsubmit="return handleLogin(event)">
+                    <div class="form-field">
+                        <label for="username">账号</label>
+                        <div class="input-wrap">
+                            <input type="text" id="username" placeholder="请输入账号" autocomplete="username" value="smvicadmin">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="password">密码</label>
+                        <div class="input-wrap">
+                            <input type="password" id="password" placeholder="请输入密码" autocomplete="current-password" value="Smvic@2026password">
+                            <button type="button" class="pwd-toggle" id="pwdToggle" onclick="togglePwd('password','pwdToggle')" title="显示密码">
+                                <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                    <path d="m14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                                <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="login-error" id="loginError"></div>
+                    <button type="submit" class="login-btn" id="loginBtn">登录</button>
+                    <div class="login-info" id="loginInfo"></div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer class="login-footer">
+        SMVIC &copy; 上海机动车检测认证技术研究中心有限公司
+    </footer>
+
+    <!-- 通用提示弹窗 -->
+    <div class="modal-overlay" id="alertModal">
+        <div class="modal-box">
+            <h3 id="alertTitle">提示</h3>
+            <p id="alertMsg"></p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="closeAlert()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码弹窗（90天未登录触发） -->
+    <div class="modal-overlay" id="pwdModal">
+        <div class="modal-box">
+            <h3 id="pwdModalTitle">请修改密码</h3>
+            <p class="subtitle">超过90天未修改密码，为确保账户安全，请修改密码后登录。</p>
+            <form class="pwd-form" id="pwdForm" onsubmit="return handleChangePwd(event)">
+                <div class="form-row">
+                    <label>原密码</label>
+                    <div class="input-wrap">
+                        <input type="password" id="oldPwd" placeholder="请输入原密码" required autocomplete="off">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('oldPwd',this)" title="显示密码">
+                            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                <path d="m14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>新密码</label>
+                    <div class="input-wrap">
+                        <input type="password" id="newPwd" placeholder="请输入新密码（至少6位）" required autocomplete="off">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('newPwd',this)" title="显示密码">
+                            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                <path d="m14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label>确认新密码</label>
+                    <div class="input-wrap">
+                        <input type="password" id="confirmPwd" placeholder="请再次输入新密码" required autocomplete="off">
+                        <button type="button" class="pwd-toggle" onclick="togglePwd('confirmPwd',this)" title="显示密码">
+                            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                                <path d="m14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="pwd-error" id="pwdError"></div>
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-default" onclick="closePwdModal()">取消</button>
+                    <button type="submit" class="btn btn-primary">确定</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 会话过期弹窗 -->
+    <div class="modal-overlay" id="sessionModal">
+        <div class="modal-box">
+            <h3>会话已过期</h3>
+            <p>您已超过30分钟未操作，会话已过期，请重新登录。</p>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="relogin()">重新登录</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var MAX_FAIL = 5;
+        var LOCK_MS = 10 * 60 * 1000;
+        var SESSION_MS = 30 * 60 * 1000;
+        var EXPIRE_DAYS = 90;
+
+        // ===== 密码显隐 =====
+        function togglePwd(inputId, toggleEl) {
+            var inp = document.getElementById(inputId);
+            var show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            var off = toggleEl.querySelector('.eye-off');
+            var on = toggleEl.querySelector('.eye-on');
+            if (off) off.style.display = show ? 'none' : '';
+            if (on) on.style.display = show ? '' : 'none';
+            toggleEl.title = show ? '隐藏密码' : '显示密码';
+        }
+
+        // ===== 初始化 =====
+        document.addEventListener('DOMContentLoaded', function () {
+            // 每次打开强制修改密码
+            if (!sessionStorage.getItem('pwdChanged')) {
+                showPwdModal();
+            }
+            if (isSessionOk()) { gogo(); return; }
+            checkLock();
+            startSessionWatch();
+        });
+
+        // ===== 登录 =====
+        function handleLogin(e) {
+            e.preventDefault();
+            var u = document.getElementById('username').value.trim();
+            var p = document.getElementById('password').value.trim();
+            var err = document.getElementById('loginError');
+            err.textContent = '';
+
+            if (!sessionStorage.getItem('pwdChanged')) {
+                showPwdModal();
+                err.textContent = '请先修改密码';
+                return false;
+            }
+            if (isLocked()) {
+                err.textContent = '账户已锁定，请 ' + fmt(lockLeft()) + ' 后重试';
+                return false;
+            }
+            if (!u) { err.textContent = '请输入账号'; return false; }
+            if (!p) { err.textContent = '请输入密码'; return false; }
+
+            if (u === 'smvicadmin' && p === 'Smvic@2026password') {
+                clearFail();
+                onLoginOk(u);
+            } else {
+                addFail();
+                var left = MAX_FAIL - getFail();
+                if (left <= 0) {
+                    err.textContent = '登录失败次数过多，账户已锁定10分钟';
+                    document.getElementById('loginBtn').disabled = true;
+                } else {
+                    err.textContent = '账号或密码错误，剩余 ' + left + ' 次机会';
+                }
+            }
+            return false;
+        }
+
+        function onLoginOk(username) {
+            var now = Date.now();
+            localStorage.setItem('loginTime', now.toString());
+            localStorage.setItem('username', username);
+            localStorage.setItem('lastActivity', now.toString());
+            gogo();
+        }
+
+        function gogo() {
+            localStorage.setItem('lastLoginStamp', Date.now().toString());
+            window.location.href = 'smvic_web_index.html';
+        }
+
+        // ===== 修改密码 =====
+        function handleChangePwd(e) {
+            e.preventDefault();
+            var old = document.getElementById('oldPwd').value.trim();
+            var nw = document.getElementById('newPwd').value.trim();
+            var cf = document.getElementById('confirmPwd').value.trim();
+            var err = document.getElementById('pwdError');
+            err.textContent = '';
+
+            if (!old || !nw || !cf) { err.textContent = '请填写所有字段'; return false; }
+            if (old !== 'Smvic@2026password') { err.textContent = '原密码错误'; return false; }
+            if (nw.length < 6) { err.textContent = '新密码长度至少6位'; return false; }
+            if (nw !== cf) { err.textContent = '两次输入的密码不一致'; return false; }
+            if (old === nw) { err.textContent = '新密码不能与原密码相同'; return false; }
+
+            localStorage.setItem('lastLoginStamp', Date.now().toString());
+            sessionStorage.setItem('pwdChanged', '1');
+            closePwdModal();
+            showAlert('修改成功', '密码修改成功，请使用新密码登录。');
+            return false;
+        }
+
+        // ===== 锁定 =====
+        function isLocked() {
+            var lu = localStorage.getItem('lockUntil');
+            return lu && Date.now() < parseInt(lu);
+        }
+        function lockLeft() { return Math.max(0, parseInt(localStorage.getItem('lockUntil') || '0') - Date.now()); }
+        function addFail() {
+            var c = parseInt(localStorage.getItem('failCount') || '0') + 1;
+            localStorage.setItem('failCount', c.toString());
+            if (c >= MAX_FAIL) localStorage.setItem('lockUntil', (Date.now() + LOCK_MS).toString());
+        }
+        function getFail() { return parseInt(localStorage.getItem('failCount') || '0'); }
+        function clearFail() { localStorage.removeItem('failCount'); localStorage.removeItem('lockUntil'); }
+        function checkLock() {
+            if (isLocked()) {
+                document.getElementById('loginBtn').disabled = true;
+                document.getElementById('loginError').textContent = '账户已锁定，请 ' + fmt(lockLeft()) + ' 后重试';
+                var iv = setInterval(function () {
+                    if (!isLocked()) {
+                        clearInterval(iv);
+                        document.getElementById('loginBtn').disabled = false;
+                        document.getElementById('loginError').textContent = '';
+                    } else {
+                        document.getElementById('loginError').textContent = '账户已锁定，请 ' + fmt(lockLeft()) + ' 后重试';
+                    }
+                }, 1000);
+            }
+        }
+
+        // ===== 会话 =====
+        function isSessionOk() {
+            var lt = localStorage.getItem('loginTime');
+            var la = localStorage.getItem('lastActivity');
+            if (!lt || !la) return false;
+            var now = Date.now();
+            return (now - parseInt(lt) <= SESSION_MS) && (now - parseInt(la) <= SESSION_MS);
+        }
+        function startSessionWatch() {
+            ['click', 'keydown', 'mousemove', 'scroll'].forEach(function (ev) {
+                document.addEventListener(ev, function () {
+                    if (localStorage.getItem('loginTime')) localStorage.setItem('lastActivity', Date.now().toString());
+                }, { passive: true });
+            });
+            setInterval(function () {
+                if (localStorage.getItem('loginTime') && !isSessionOk()) {
+                    document.getElementById('sessionModal').classList.add('show');
+                }
+            }, 60000);
+        }
+
+        // ===== 弹窗 =====
+        function showAlert(title, msg, cb) {
+            document.getElementById('alertTitle').textContent = title;
+            document.getElementById('alertMsg').textContent = msg;
+            document.getElementById('alertModal').classList.add('show');
+            window._alertCb = cb;
+        }
+        function closeAlert() {
+            document.getElementById('alertModal').classList.remove('show');
+            if (window._alertCb) { window._alertCb(); window._alertCb = null; }
+        }
+        function showPwdModal() {
+            document.getElementById('oldPwd').value = '';
+            document.getElementById('newPwd').value = '';
+            document.getElementById('confirmPwd').value = '';
+            document.getElementById('pwdError').textContent = '';
+            document.getElementById('pwdModal').classList.add('show');
+        }
+        function closePwdModal() { document.getElementById('pwdModal').classList.remove('show'); }
+
+        function relogin() { doLogout(); location.reload(); }
+        function doLogout() {
+            localStorage.removeItem('loginTime');
+            localStorage.removeItem('lastActivity');
+            localStorage.removeItem('username');
+            sessionStorage.removeItem('pwdChanged');
+            window.location.href = 'smvic_web_login.html';
+        }
+
+        function fmt(ms) {
+            var s = Math.ceil(ms / 1000);
+            var m = Math.floor(s / 60);
+            s = s % 60;
+            return m > 0 ? m + '分' + s + '秒' : s + '秒';
+        }
+    </script>
+</body>
+</html>

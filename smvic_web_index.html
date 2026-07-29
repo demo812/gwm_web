@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>辅助驾驶保障服务平台（检测端）</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #333; }
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; font-size: inherit; cursor: pointer; border: none; background: none; }
+
+/* ===== 布局 ===== */
+.app { display: flex; flex-direction: column; height: 100vh; }
+.app-body { display: flex; flex: 1; overflow: hidden; }
+.sidebar { width: 200px; background: #fff; border-right: 1px solid #e8e8e8; display: flex; flex-direction: column; flex-shrink: 0; }
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.content { flex: 1; overflow: hidden; position: relative; }
+.content iframe { width: 100%; height: 100%; border: none; }
+
+/* ===== Header ===== */
+.header {
+    height: 56px; background: #fff; border-bottom: 1px solid #e8e8e8;
+    display: flex; align-items: center; padding: 0 20px 0 0; flex-shrink: 0;
+}
+.header-logo {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 18px; font-weight: 600; color: #003366;
+    width: 200px; padding: 0 16px; flex-shrink: 0;
+}
+.header-logo svg { width: 28px; height: 28px; }
+.header-center { display: flex; align-items: center; gap: 8px; }
+.header-right { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.header-icon {
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border-radius: 4px; color: #666; cursor: pointer;
+}
+.header-icon:hover { background: #f5f5f5; }
+.header-user {
+    display: flex; align-items: center; gap: 6px; color: #666; font-size: 14px; cursor: pointer;
+    position: relative; padding: 4px 8px; border-radius: 4px;
+}
+.header-user:hover { background: #f5f5f5; }
+.user-arrow { font-size: 10px; }
+.user-dropdown {
+    display: none; position: absolute; top: 100%; right: 0; margin-top: 4px;
+    background: #fff; border: 1px solid #e8e8e8; border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-width: 120px; z-index: 1000;
+}
+.user-dropdown.show { display: block; }
+.user-dropdown a {
+    display: block; padding: 10px 16px; color: #666; font-size: 14px; white-space: nowrap;
+}
+.user-dropdown a:hover { background: #f5f5f5; color: #003366; }
+
+/* ===== Sidebar ===== */
+.sidebar-brand {
+    height: 56px; display: flex; align-items: center; padding: 0 16px;
+    border-bottom: 1px solid #e8e8e8; gap: 8px; font-size: 16px; font-weight: 600; color: #003366;
+}
+.sidebar-brand svg { width: 24px; height: 24px; }
+.sidebar-menu { flex: 1; overflow-y: auto; padding: 8px 0; }
+.menu-item {
+    display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+    color: #666; font-size: 14px; cursor: pointer; transition: all 0.2s; position: relative;
+}
+.menu-item:hover { color: #003366; background: #f0f5ff; }
+.menu-item.active { color: #fff; background: #003366; }
+.menu-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+.menu-arrow { margin-left: auto; font-size: 10px; transition: transform 0.2s; }
+.menu-item.open .menu-arrow { transform: rotate(180deg); }
+
+.submenu { display: none; background: #fafafa; }
+.submenu.show { display: block; }
+.submenu-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 16px 10px 44px;
+    color: #666; font-size: 14px; cursor: pointer;
+}
+.submenu-item:hover { color: #003366; background: #f0f5ff; }
+.submenu-item.active { color: #003366; background: #e6f0ff; font-weight: 500; }
+
+/* ===== Tab Bar ===== */
+.tab-bar {
+    display: none; height: 40px; background: #fff; border-bottom: 1px solid #e8e8e8;
+    align-items: center; padding: 0 8px; gap: 4px; flex-shrink: 0; overflow-x: auto;
+}
+.tab-bar.show { display: flex; }
+.tab-item {
+    display: flex; align-items: center; gap: 6px; padding: 0 16px; height: 32px;
+    border-radius: 4px 4px 0 0; font-size: 14px; color: #666; cursor: pointer;
+    white-space: nowrap; border: 1px solid transparent; border-bottom: none;
+}
+.tab-item:hover { background: #f5f5f5; }
+.tab-item.active {
+    background: #003366; color: #fff; border-color: #003366;
+}
+.tab-item .tab-close {
+    width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; font-size: 12px; line-height: 1; margin-left: 4px;
+}
+.tab-item.active .tab-close:hover { background: rgba(255,255,255,0.2); }
+.tab-item .tab-close:hover { background: #e8e8e8; }
+.tab-close-all {
+    margin-left: auto; padding: 4px 12px; font-size: 13px; color: #999; cursor: pointer; white-space: nowrap;
+}
+.tab-close-all:hover { color: #666; }
+
+/* ===== Welcome ===== */
+.welcome-page {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 100%; background: #fff; position: relative;
+}
+.welcome-illustration { width: 400px; height: 300px; margin-bottom: 20px; }
+.welcome-title { font-size: 28px; color: #003366; font-weight: 600; letter-spacing: 6px; }
+.welcome-line { width: 120px; height: 2px; background: #003366; margin: 8px auto; }
+.welcome-sub { font-size: 14px; color: #999; margin-top: 4px; }
+
+/* ===== 父框架遮罩 ===== */
+.parent-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+}
+body.iframe-modal-open .parent-overlay { display: block; }
+body.iframe-modal-open #contentFrame {
+    position: relative;
+    z-index: 3000;
+}
+
+/* ===== Toast ===== */
+.toast {
+    display: none;
+    position: fixed; top: 20px; left: 50%;
+    transform: translateX(-50%);
+    background: #333; color: #fff;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 5000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.toast.show { display: block; }
+
+/* ===== 修改密码弹窗 ===== */
+.pwd-modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 4000; align-items: center; justify-content: center;
+}
+.pwd-modal-overlay.show { display: flex; }
+.pwd-modal-box {
+    background: #fff; border-radius: 8px; width: 440px; max-width: 90%;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+}
+.pwd-modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.pwd-modal-header h3 { font-size: 16px; font-weight: 600; color: #333; }
+.pwd-modal-close { font-size: 20px; color: #999; cursor: pointer; line-height: 1; }
+.pwd-modal-close:hover { color: #666; }
+.pwd-modal-body { padding: 20px; }
+.pwd-form-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.pwd-form-row label { width: 100px; font-size: 14px; color: #666; text-align: right; flex-shrink: 0; }
+.pwd-form-row input { flex: 1; height: 36px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 4px; }
+.pwd-form-row input:focus { border-color: #003366; }
+.pwd-modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+
+/* ===== 通用按钮 ===== */
+.btn { height: 32px; padding: 0 16px; border-radius: 4px; cursor: pointer; font-size: 14px; border: 1px solid transparent; }
+.btn-primary { background: #003366; color: #fff; border-color: #003366; }
+.btn-default { background: #fff; color: #666; border-color: #d9d9d9; }
+.btn:hover { opacity: 0.9; }
+</style>
+</head>
+<body class="app">
+
+<!-- Header -->
+<header class="header">
+    <div class="header-logo">
+        <svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="14,2 24,8 24,18 14,24 4,18 4,8" fill="none" stroke="#003366" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="14,6 20,10 20,16 14,20 8,16 8,10" fill="none" stroke="#003366" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+        SMVIC
+    </div>
+    <div class="header-center">
+        <div class="header-icon" title="折叠/展开" onclick="toggleSidebar()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </div>
+        <div class="header-icon" title="全屏" onclick="toggleFullscreen()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="header-user" onclick="toggleUserDropdown()">
+            <span class="user-name">系统管理员</span>
+            <i class="user-arrow">&#9662;</i>
+            <div class="user-dropdown" id="userDropdown">
+                <a href="#" onclick="event.preventDefault(); showChangePwdModal();">修改密码</a>
+                <a href="#" onclick="event.preventDefault(); doLogout();">退出登录</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Body -->
+<div class="app-body">
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <div class="menu-item" data-page="smvic_web_system_report.html" data-title="系统报告" data-tab="tab-report" onclick="onMenuClick(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                系统报告
+            </div>
+            <div class="menu-item" data-page="smvic_web_manual_report.html" data-title="人工报告" data-tab="tab-manual" onclick="onMenuClick(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                人工报告
+            </div>
+            <div class="menu-item" id="menuSystem" onclick="toggleSubmenu(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                系统管理
+                <span class="menu-arrow">&#9662;</span>
+            </div>
+            <div class="submenu" id="submenuSystem">
+                <div class="submenu-item" data-page="smvic_web_user_management.html" data-title="用户管理" data-tab="tab-user" onclick="onMenuClick(this)">用户管理</div>
+                <div class="submenu-item" data-page="smvic_web_role_management.html" data-title="角色权限" data-tab="tab-role" onclick="onMenuClick(this)">角色权限</div>
+            </div>
+            <div class="menu-item" data-page="smvic_web_log_management.html" data-title="日志管理" data-tab="tab-log" onclick="onMenuClick(this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                日志管理
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="tab-bar" id="tabBar"></div>
+        <div class="content" id="contentArea">
+            <div class="welcome-page" id="welcomePage">
+                <svg class="welcome-illustration" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="120" y="40" width="160" height="120" rx="4" fill="none" stroke="#e0e0e0" stroke-width="1"/>
+                    <rect x="140" y="60" width="120" height="80" rx="2" fill="#f0f5ff" stroke="#003366" stroke-width="1.5"/>
+                    <path d="M150 100 Q170 80 190 100 T230 100" fill="none" stroke="#003366" stroke-width="2"/>
+                    <circle cx="180" cy="130" r="15" fill="none" stroke="#003366" stroke-width="1.5"/>
+                    <line x1="205" y1="120" x2="245" y2="120" stroke="#003366" stroke-width="1"/>
+                    <line x1="205" y1="130" x2="235" y2="130" stroke="#003366" stroke-width="1"/>
+                    <line x1="205" y1="140" x2="240" y2="140" stroke="#003366" stroke-width="1"/>
+                    <polygon points="60,40 80,30 70,50" fill="#003366" opacity="0.3"/>
+                    <polygon points="320,60 340,50 330,70" fill="#003366" opacity="0.3"/>
+                    <circle cx="100" cy="200" r="4" fill="#003366" opacity="0.3"/>
+                    <circle cx="300" cy="180" r="6" fill="none" stroke="#003366" stroke-width="1" opacity="0.3"/>
+                    <circle cx="280" cy="220" r="3" fill="#003366" opacity="0.3"/>
+                    <line x1="80" y1="250" x2="180" y2="250" stroke="#003366" stroke-width="2"/>
+                    <line x1="220" y1="250" x2="320" y2="250" stroke="#003366" stroke-width="2"/>
+                    <text x="200" y="280" text-anchor="middle" font-size="24" fill="#003366" font-weight="600" letter-spacing="4">WELCOME</text>
+                    <line x1="160" y1="295" x2="240" y2="295" stroke="#003366" stroke-width="1"/>
+                </svg>
+                <div class="welcome-line"></div>
+                <div class="welcome-sub">辅助驾驶保障服务平台（检测端）</div>
+            </div>
+            <iframe id="contentFrame" style="display:none;"></iframe>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- 父框架遮罩：iframe 内弹窗打开时覆盖菜单栏/顶部栏/tab-bar -->
+<div id="parentOverlay" class="parent-overlay"></div>
+
+<!-- 修改密码弹窗 -->
+<div class="pwd-modal-overlay" id="changePwdModal">
+    <div class="pwd-modal-box">
+        <div class="pwd-modal-header"><h3>修改密码</h3><span class="pwd-modal-close" onclick="closeChangePwdModal()">&times;</span></div>
+        <div class="pwd-modal-body">
+            <div class="pwd-form-row"><label>原密码</label><input type="password" id="oldPwd" placeholder="请输入原密码"></div>
+            <div class="pwd-form-row"><label>新密码</label><input type="password" id="newPwd" placeholder="请输入新密码"></div>
+            <div class="pwd-form-row"><label>确认新密码</label><input type="password" id="confirmNewPwd" placeholder="请再次输入新密码"></div>
+        </div>
+        <div class="pwd-modal-footer">
+            <button class="btn btn-default" onclick="closeChangePwdModal()">取消</button>
+            <button class="btn btn-primary" onclick="submitChangePwd()">确定</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ===== Tab 管理 =====
+var tabs = [];
+var activeTabId = null;
+
+function openTab(title, url, tabId) {
+    var existing = tabs.find(function(t) { return t.id === tabId; });
+    if (!existing) {
+        tabs.push({ id: tabId, title: title, url: url });
+        renderTabs();
+    }
+    switchTab(tabId);
+}
+
+function renderTabs() {
+    var bar = document.getElementById('tabBar');
+    bar.innerHTML = '';
+    if (tabs.length === 0) { bar.classList.remove('show'); return; }
+    bar.classList.add('show');
+    tabs.forEach(function(t) {
+        var div = document.createElement('div');
+        div.className = 'tab-item' + (t.id === activeTabId ? ' active' : '');
+        div.innerHTML = '<span>' + t.title + '</span><span class="tab-close" onclick="event.stopPropagation(); closeTab(\'' + t.id + '\')">&#10005;</span>';
+        div.onclick = function() { switchTab(t.id); };
+        bar.appendChild(div);
+    });
+    var closeAll = document.createElement('div');
+    closeAll.className = 'tab-close-all';
+    closeAll.textContent = '关闭全部';
+    closeAll.onclick = closeAllTabs;
+    bar.appendChild(closeAll);
+}
+
+function switchTab(tabId) {
+    activeTabId = tabId;
+    var tab = tabs.find(function(t) { return t.id === tabId; });
+    if (!tab) return;
+    document.getElementById('welcomePage').style.display = 'none';
+    var frame = document.getElementById('contentFrame');
+    frame.style.display = 'block';
+    frame.src = tab.url;
+    renderTabs();
+    updateMenuHighlight(tab.url);
+}
+
+function closeTab(tabId) {
+    tabs = tabs.filter(function(t) { return t.id !== tabId; });
+    if (activeTabId === tabId) {
+        if (tabs.length > 0) { switchTab(tabs[tabs.length - 1].id); }
+        else { showWelcome(); }
+    } else { renderTabs(); }
+}
+
+function closeAllTabs() {
+    tabs = []; activeTabId = null; showWelcome();
+}
+
+function showWelcome() {
+    document.getElementById('welcomePage').style.display = 'flex';
+    document.getElementById('contentFrame').style.display = 'none';
+    document.getElementById('tabBar').classList.remove('show');
+    activeTabId = null;
+    updateMenuHighlight('');
+}
+
+// ===== 菜单 =====
+function onMenuClick(el) {
+    var page = el.getAttribute('data-page');
+    var title = el.getAttribute('data-title');
+    var tabId = el.getAttribute('data-tab');
+    if (!page || page === '#') { showToast('暂无数据'); return; }
+    openTab(title, page, tabId);
+}
+
+function toggleSubmenu(el) {
+    el.classList.toggle('open');
+    var submenu = document.getElementById('submenuSystem');
+    submenu.classList.toggle('show');
+}
+
+function toggleSidebar() {
+    var sb = document.getElementById('sidebar');
+    sb.style.display = sb.style.display === 'none' ? 'flex' : 'none';
+}
+
+function updateMenuHighlight(url) {
+    document.querySelectorAll('.menu-item, .submenu-item').forEach(function(el) {
+        el.classList.remove('active');
+    });
+    if (!url) return;
+    document.querySelectorAll('[data-page]').forEach(function(el) {
+        if (el.getAttribute('data-page') === url) el.classList.add('active');
+    });
+}
+
+function toggleUserDropdown() {
+    document.getElementById('userDropdown').classList.toggle('show');
+}
+
+function doLogout() {
+    localStorage.removeItem('loginTime');
+    localStorage.removeItem('lastActivity');
+    localStorage.removeItem('username');
+    sessionStorage.removeItem('pwdChanged');
+    window.location.href = 'smvic_web_login.html';
+}
+
+// ===== 全屏切换 =====
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+}
+
+// ===== 修改密码 =====
+function showChangePwdModal() {
+    document.getElementById('changePwdModal').classList.add('show');
+    document.getElementById('userDropdown').classList.remove('show');
+}
+function closeChangePwdModal() {
+    document.getElementById('changePwdModal').classList.remove('show');
+    document.getElementById('oldPwd').value = '';
+    document.getElementById('newPwd').value = '';
+    document.getElementById('confirmNewPwd').value = '';
+}
+function submitChangePwd() {
+    var oldPwd = document.getElementById('oldPwd').value.trim();
+    var newPwd = document.getElementById('newPwd').value.trim();
+    var confirm = document.getElementById('confirmNewPwd').value.trim();
+    if (!oldPwd) { showToast('请输入原密码'); return; }
+    if (!newPwd) { showToast('请输入新密码'); return; }
+    if (newPwd !== confirm) { showToast('两次输入的新密码不一致'); return; }
+    showToast('密码修改成功');
+    closeChangePwdModal();
+}
+
+// ===== Toast =====
+var _toastTimer = null;
+function showToast(msg) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+
+// ===== 会话检测 =====
+var SESSION_MS = 30 * 60 * 1000;
+function isSessionOk() {
+    var lt = localStorage.getItem('loginTime');
+    var la = localStorage.getItem('lastActivity');
+    if (!lt || !la) return false;
+    var now = Date.now();
+    return (now - parseInt(lt) <= SESSION_MS) && (now - parseInt(la) <= SESSION_MS);
+}
+function startSessionWatch() {
+    ['click', 'keydown', 'mousemove', 'scroll'].forEach(function(ev) {
+        document.addEventListener(ev, function() {
+            if (localStorage.getItem('loginTime')) localStorage.setItem('lastActivity', Date.now().toString());
+        }, { passive: true });
+    });
+    setInterval(function() {
+        if (localStorage.getItem('loginTime') && !isSessionOk()) {
+            showToast('会话已过期，请重新登录');
+            doLogout();
+        }
+    }, 60000);
+}
+
+// ===== iframe 子页面 modal 遮罩同步 =====
+function checkIframeModal() {
+    var iframe = document.getElementById('contentFrame');
+    if (!iframe || iframe.style.display === 'none') return;
+    try {
+        var doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+        if (!doc || !doc.body) return;
+        var hasModal = !!doc.querySelector('.modal-overlay.show, .modal.show, .el-dialog__wrapper');
+        if (hasModal) { document.body.classList.add('iframe-modal-open'); }
+        else { document.body.classList.remove('iframe-modal-open'); }
+    } catch (e) {}
+}
+function observeIframeModal() {
+    var iframe = document.getElementById('contentFrame');
+    if (!iframe) return;
+    iframe.addEventListener('load', function() {
+        try {
+            var doc = iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document);
+            if (!doc || !doc.body) return;
+            if (iframe._modalObserver) iframe._modalObserver.disconnect();
+            var observer = new MutationObserver(function() { checkIframeModal(); });
+            observer.observe(doc.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+            iframe._modalObserver = observer;
+            checkIframeModal();
+        } catch (e) {}
+    });
+    if (iframe._modalPoll) clearInterval(iframe._modalPoll);
+    iframe._modalPoll = setInterval(checkIframeModal, 300);
+}
+
+// ===== 初始化 =====
+document.addEventListener('DOMContentLoaded', function() {
+    if (!localStorage.getItem('loginTime') || !isSessionOk()) {
+        doLogout(); return;
+    }
+    startSessionWatch();
+    observeIframeModal();
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.header-user')) { document.getElementById('userDropdown').classList.remove('show'); }
+    });
+});
+
+// ===== 接收 iframe 活动同步 =====
+window.addEventListener('message', function(e) {
+    if (e.data === 'activity') { localStorage.setItem('lastActivity', Date.now().toString()); }
+});
+</script>
+</body>
+</html>

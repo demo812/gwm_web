@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <base href="./">
+    <title>长城辅助驾驶保障服务平台 - 数据概览</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
+    <script>
+        // Mark as iframe mode before CSS renders to hide sidebar/header immediately
+        if (window.self !== window.top) {
+            document.documentElement.classList.add('in-iframe');
+        }
+    </script>
+    <style>
+        html.in-iframe #sidebar,
+        html.in-iframe .header,
+        html.in-iframe #tabBar,
+        html.in-iframe #sidebar-overlay,
+        html.in-iframe #welcomeBg,
+        html.in-iframe .welcome-bg.show {
+            display: none !important;
+        }
+        html.in-iframe #contentWrapper,
+        html.in-iframe #contentWrapper.hidden {
+            display: block !important;
+        }
+        html.in-iframe .main-wrapper {
+            margin-left: 0 !important;
+            margin-top: 0 !important;
+        }
+    </style>
+
+    <style>
+        /* ===== Dashboard 专属样式 ===== */
+
+        /* 统计流程条 */
+        .stats-flow {
+            background: #fff;
+            padding: 24px 20px;
+            margin: 16px 20px 0;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0;
+            position: relative;
+        }
+        .stats-flow-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            flex: 1;
+        }
+        .stats-flow-item .flow-label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        .stats-flow-item .flow-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #52c41a;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            z-index: 2;
+        }
+        .stats-flow-item .flow-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        /* 贯穿整个流程条的灰色线 */
+        .stats-flow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 60px;
+            right: 60px;
+            height: 2px;
+            background: #e8e8e8;
+            z-index: 0;
+            transform: translateY(-50%);
+        }
+        /* 3段绿色渐变线依次移动 */
+        .stats-flow::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 60px;
+            right: 60px;
+            height: 2px;
+            background: repeating-linear-gradient(90deg,
+                transparent 0%, transparent 15%,
+                #52c41a 15%, #52c41a 25%,
+                transparent 25%, transparent 40%,
+                #52c41a 40%, #52c41a 50%,
+                transparent 50%, transparent 65%,
+                #52c41a 65%, #52c41a 75%,
+                transparent 75%, transparent 100%
+            );
+            background-size: 300% 100%;
+            animation: flowShine3 3s linear infinite;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+        @keyframes flowShine3 {
+            0% { background-position: 100% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* 卡片网格 */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 16px 20px;
+        }
+        @media (max-width: 1200px) {
+            .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .dashboard-grid { grid-template-columns: 1fr; padding: 12px; }
+            .stats-flow { flex-wrap: wrap; gap: 16px; }
+            .stats-flow::before, .stats-flow::after { display: none; }
+            .stats-flow-item { flex: 0 0 calc(50% - 8px); }
+        }
+
+        /* 数据卡片 */
+        .data-card {
+            background: #fff;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .data-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .data-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+        }
+        .data-card-tabs {
+            display: flex;
+            gap: 16px;
+        }
+        .data-card-tab {
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            padding-bottom: 2px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .data-card-tab:hover { color: var(--primary); }
+        .data-card-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .data-card-body {
+            padding: 16px;
+        }
+
+        /* 统计数字区 */
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .stat-item {
+            flex: 1;
+            background: #fafafa;
+            border-radius: 4px;
+            padding: 12px 16px;
+        }
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .stat-value {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+        }
+        .stat-value .unit {
+            font-size: 14px;
+            font-weight: normal;
+            color: #666;
+            margin-left: 4px;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            width: 100%;
+            height: 220px;
+        }
+
+        /* 暂无数据 */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 220px;
+            color: #999;
+        }
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            background: #f5f5f5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+        .empty-state-text { font-size: 14px; }
+
+        /* Tab内容切换 */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* dashboard 筛选区一行显示 */
+        .dashboard-filter-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .dashboard-filter-row .filter-item {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .dashboard-filter-row .filter-buttons {
+            flex: 0 0 auto;
+            justify-content: flex-end;
+        }
+    </style>
+
+    <script>
+        // Detect if loaded in iframe
+        if (window.self !== window.top) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const sidebar = document.getElementById('sidebar');
+                const header = document.querySelector('.header');
+                const tabBar = document.getElementById('tabBar');
+                const mainWrapper = document.querySelector('.main-wrapper');
+                const sidebarOverlay = document.getElementById('sidebar-overlay');
+                const wrapper = document.getElementById('contentWrapper');
+                const welcome = document.getElementById('welcomeBg');
+                if (sidebar) sidebar.style.setProperty('display', 'none', 'important');
+                if (header) header.style.setProperty('display', 'none', 'important');
+                if (tabBar) tabBar.style.setProperty('display', 'none', 'important');
+                if (sidebarOverlay) sidebarOverlay.style.setProperty('display', 'none', 'important');
+                if (mainWrapper) {
+                    mainWrapper.style.setProperty('margin-left', '0', 'important');
+                    mainWrapper.style.setProperty('margin-top', '0', 'important');
+                }
+                if (wrapper) {
+                    wrapper.classList.remove('hidden');
+                    wrapper.style.setProperty('display', 'block', 'important');
+                }
+                if (welcome) {
+                    welcome.classList.remove('show');
+                    welcome.style.setProperty('display', 'none', 'important');
+                }
+                document.body.classList.remove('sidebar-collapsed');
+            });
+        }
+    </script>
+</head>
+<body>
+    <!-- 移动端遮罩 -->
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 左侧菜单 -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://www.gwm.com.cn/favicon.ico" alt="logo" onerror="this.style.display='none'">
+            <span>长城汽车</span>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active"><a href="gwm_web_dashboard.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 5"/></svg><span>数据概览</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="2"/><path d="M8 21l4-3 4 3"/></svg><span>权益管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '权益车辆', 'gwm_web_equity_vehicle.html', 'equity_vehicle')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="9" rx="2"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg><span>权益车辆</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '车型配置', 'gwm_web_model_config.html', 'model_config')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>车型配置</span></a></li>
+                        <li><a href="gwm_web_poster.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 16"/></svg><span>权益海报</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>投保管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '预投记录', 'gwm_web_pre_insurance.html', 'pre_insurance')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>预投记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '投保记录', 'gwm_web_insurance_record.html', 'insurance_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg><span>投保记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '异常记录', 'gwm_web_exception_record.html', 'exception_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>异常记录</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>保单管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '保单记录', 'gwm_web_policy.html', 'policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>保单记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '下载记录', 'gwm_web_download.html', 'download')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>下载记录</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="gwm_web_return.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span>退车管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>申请管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="gwm_web_application.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>申请记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '协议政策', 'gwm_web_agreement_policy.html', 'agreement_policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>协议政策</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>享权管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权记录', 'gwm_web_enjoyment_record.html', 'enjoyment_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg><span>享权记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权说明', 'gwm_web_enjoyment_desc.html', 'enjoyment_desc')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>享权说明</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg><span>异常工单</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '申请工单', 'gwm_web_abnormal_workorder.html', 'abnormal_workorder')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg><span>申请工单</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="gwm_web_export.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>导出管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>存证管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据存证', 'gwm_web_data_evidence.html', 'data_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>数据存证</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '报告存证', 'gwm_web_report_evidence.html', 'report_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>报告存证</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据校验', 'gwm_web_data_verify.html', 'data_verify')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>数据校验</span></a></li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '模型管理', 'gwm_web_model_manage.html', 'model_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg><span>模型管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>系统管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '用户管理', 'gwm_web_user_manage.html', 'user_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>用户管理</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '角色权限', 'gwm_web_role_permission.html', 'role_permission')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>角色权限</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return onMenuClick(this, false)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>邮件通知</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '日志管理', 'gwm_web_log_management.html', 'log_management')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>日志管理</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- 主内容区 -->
+    <div class="main-wrapper">
+        <!-- 顶部Header -->
+        <header class="header">
+            <div class="header-left-icons">
+                <button class="header-icon-btn" onclick="toggleSidebar()" title="收起菜单">&#9776;</button>
+                <button class="header-icon-btn" onclick="toggleFullscreen()" title="全屏显示">&#9974;</button>
+            </div>
+            <div class="header-title"></div>
+            <div class="header-user">
+                <span class="user-name">张俊伟 YB00001679</span>
+                <i class="user-arrow">&#9662;</i>
+            </div>
+        </header>
+
+        <!-- Tab 标签栏 -->
+        <div class="tab-bar" id="tabBar">
+            <div class="tab-item" id="pageTab">
+                数据概览 <span class="tab-close" onclick="closePage()">&times;</span>
+            </div>
+        </div>
+
+        <!-- 筛选区 -->
+        <div class="filter-section" id="filterSection">
+            <div class="filter-row dashboard-filter-row">
+                <div class="filter-item">
+                    <label>权益来源:</label>
+                    <select>
+                        <option>请选择权益来源</option>
+                        <option>智选实销</option>
+                        <option>经销商实销</option>
+                        <option>卡券激活</option>
+                        <option>商城下单</option>
+                        <option>人工导入</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label>品牌车型:</label>
+                    <select>
+                        <option>请选择品牌车型</option>
+                        <option>哈弗</option>
+                        <option>WEY</option>
+                        <option>欧拉</option>
+                        <option>皮卡</option>
+                        <option>坦克</option>
+                    </select>
+                </div>
+                <div class="filter-item" style="position:relative;">
+                    <label>时间范围:</label>
+                    <input type="text" class="datetime-range-input" id="dashboardTimeRange" placeholder="请选择 开始时间 - 结束时间" readonly onclick="openDateTimeRangePicker(this, 'dashboardTimePicker')">
+                    <div class="datetime-range-picker" id="dashboardTimePicker">
+                        <div class="picker-header">
+                            <span>选择时间范围</span>
+                            <span class="picker-close" onclick="closeDateTimePicker('dashboardTimePicker')">&times;</span>
+                        </div>
+                        <div class="picker-body">
+                            <div class="picker-field">
+                                <label>开始时间</label>
+                                <input type="datetime-local" id="dashboardTimeStart">
+                            </div>
+                            <div class="picker-field">
+                                <label>结束时间</label>
+                                <input type="datetime-local" id="dashboardTimeEnd">
+                            </div>
+                        </div>
+                        <div class="picker-footer">
+                            <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('dashboardTimeRange', 'dashboardTimePicker')">清空</button>
+                            <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('dashboardTimeRange', 'dashboardTimePicker')">确定</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-item filter-buttons">
+                    <button class="btn btn-default" onclick="doReset()">重置</button>
+                    <button class="btn btn-primary" onclick="doQuery()">查询</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主内容 -->
+        <div class="main-content" style="padding: 0;">
+            <div class="content-wrapper" id="contentWrapper">
+            <!-- 统计流程条 -->
+            <div class="stats-flow">
+                <div class="stats-flow-item">
+                    <div class="flow-label">权益车辆</div>
+                    <div class="flow-icon">&#10003;</div>
+                    <div class="flow-value">100000</div>
+                </div>
+                <div class="stats-flow-item">
+                    <div class="flow-label">申请服务</div>
+                    <div class="flow-icon">&#10003;</div>
+                    <div class="flow-value">585</div>
+                </div>
+                <div class="stats-flow-item">
+                    <div class="flow-label">服务受理</div>
+                    <div class="flow-icon">&#10003;</div>
+                    <div class="flow-value">585</div>
+                </div>
+                <div class="stats-flow-item">
+                    <div class="flow-label">事故分析</div>
+                    <div class="flow-icon">&#10003;</div>
+                    <div class="flow-value">532</div>
+                </div>
+                <div class="stats-flow-item">
+                    <div class="flow-label">享权判定</div>
+                    <div class="flow-icon">&#10003;</div>
+                    <div class="flow-value">480</div>
+                </div>
+                <div class="stats-flow-item">
+                    <div class="flow-label">权益支付</div>
+                    <div class="flow-icon">&#10003;</div>
+                    <div class="flow-value">452</div>
+                </div>
+            </div>
+
+            <!-- 卡片网格 -->
+            <div class="dashboard-grid">
+                <!-- 权益数据 -->
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="data-card-title">权益数据</div>
+                        <div class="data-card-tabs">
+                            <div class="data-card-tab active" onclick="switchTab(this, 'equity-vehicle')">权益车辆</div>
+                            <div class="data-card-tab" onclick="switchTab(this, 'equity-provider')">定责服务商</div>
+                        </div>
+                    </div>
+                    <div class="data-card-body">
+                        <!-- 权益车辆 -->
+                        <div class="tab-content active" id="equity-vehicle">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">权益车辆 / 辆</div>
+                                    <div class="stat-value">129<span class="unit">辆</span></div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">下线车辆（含退保）</div>
+                                    <div class="stat-value">99,968</div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-equity-vehicle"></div>
+                        </div>
+                        <!-- 定责服务商 -->
+                        <div class="tab-content" id="equity-provider">
+                            <div class="stats-row">
+                                <div class="stat-item" style="flex: none; width: 100%;">
+                                    <div class="stat-label">定责服务商</div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-equity-provider"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 申请服务 -->
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="data-card-title">申请服务</div>
+                        <div class="data-card-tabs">
+                            <div class="data-card-tab active" onclick="switchTab(this, 'apply-record')">申请记录</div>
+                            <div class="data-card-tab" onclick="switchTab(this, 'apply-status')">申请状态</div>
+                            <div class="data-card-tab" onclick="switchTab(this, 'apply-injury')">人伤剐蹭</div>
+                        </div>
+                    </div>
+                    <div class="data-card-body">
+                        <!-- 申请记录 -->
+                        <div class="tab-content active" id="apply-record">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">申请服务</div>
+                                    <div class="stat-value">378<span class="unit">例</span><span style="font-size:14px;color:#666;margin-left:8px;">584次</span></div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">申请未通过</div>
+                                    <div class="stat-value">60<span class="unit">例</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-apply-record"></div>
+                        </div>
+                        <!-- 申请状态 -->
+                        <div class="tab-content" id="apply-status">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">申请服务</div>
+                                    <div class="stat-value">378<span class="unit">例</span><span style="font-size:14px;color:#666;margin-left:8px;">584次</span></div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">申请未通过</div>
+                                    <div class="stat-value">60<span class="unit">例</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-apply-status"></div>
+                        </div>
+                        <!-- 人伤剐蹭 -->
+                        <div class="tab-content" id="apply-injury">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">申请服务</div>
+                                    <div class="stat-value">378<span class="unit">例</span><span style="font-size:14px;color:#666;margin-left:8px;">584次</span></div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">申请未通过</div>
+                                    <div class="stat-value">60<span class="unit">例</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-apply-injury"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分析报告 -->
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="data-card-title">分析报告</div>
+                        <div class="data-card-tabs">
+                            <div class="data-card-tab active" onclick="switchTab(this, 'report-record')">报告记录</div>
+                            <div class="data-card-tab" onclick="switchTab(this, 'report-conclusion')">报告结论</div>
+                            <div class="data-card-tab" onclick="switchTab(this, 'report-provider')">定责服务商</div>
+                        </div>
+                    </div>
+                    <div class="data-card-body">
+                        <!-- 报告记录 -->
+                        <div class="tab-content active" id="report-record">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">事故分析报告</div>
+                                    <div class="stat-value">58<span class="unit">份</span></div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">报告通过率</div>
+                                    <div class="stat-value">75.86<span class="unit">%</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-report-record"></div>
+                        </div>
+                        <!-- 报告结论 -->
+                        <div class="tab-content" id="report-conclusion">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">事故分析报告</div>
+                                    <div class="stat-value">58<span class="unit">份</span></div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">报告通过率</div>
+                                    <div class="stat-value">75.86<span class="unit">%</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-report-conclusion"></div>
+                        </div>
+                        <!-- 定责服务商 -->
+                        <div class="tab-content" id="report-provider">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">事故分析报告</div>
+                                    <div class="stat-value">58<span class="unit">份</span></div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">报告通过率</div>
+                                    <div class="stat-value">75.86<span class="unit">%</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-report-provider"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 享权判定 -->
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="data-card-title">享权判定</div>
+                        <div class="data-card-tabs">
+                            <div class="data-card-tab active" onclick="switchTab(this, 'right-record')">享权记录</div>
+                            <div class="data-card-tab" onclick="switchTab(this, 'right-status')">享权状态</div>
+                            <div class="data-card-tab" onclick="switchTab(this, 'right-scene')">享权场景</div>
+                        </div>
+                    </div>
+                    <div class="data-card-body">
+                        <!-- 享权记录 -->
+                        <div class="tab-content active" id="right-record">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">享权判定</div>
+                                    <div class="stat-value">36</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">享权通过率</div>
+                                    <div class="stat-value">36.73<span class="unit">%</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-right-record"></div>
+                        </div>
+                        <!-- 享权状态 -->
+                        <div class="tab-content" id="right-status">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">享权判定</div>
+                                    <div class="stat-value">36</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">享权通过率</div>
+                                    <div class="stat-value">36.73<span class="unit">%</span></div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-right-status"></div>
+                        </div>
+                        <!-- 享权场景 -->
+                        <div class="tab-content" id="right-scene">
+                            <div class="stats-row">
+                                <div class="stat-item">
+                                    <div class="stat-label">享权判定</div>
+                                    <div class="stat-value">36</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-label">享权通过率</div>
+                                    <div class="stat-value">36.73<span class="unit">%</span></div>
+                                </div>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">&#128230;</div>
+                                <div class="empty-state-text">暂无数据</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 申请工单 -->
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="data-card-title">申请工单</div>
+                        <div class="data-card-tabs">
+                            <div class="data-card-tab active" onclick="switchTab(this, 'work-order-apply')">工单记录</div>
+                        </div>
+                    </div>
+                    <div class="data-card-body">
+                        <div class="tab-content active" id="work-order-apply">
+                            <div class="stats-row">
+                                <div class="stat-item" style="flex: none; width: 100%;">
+                                    <div class="stat-label">申请工单</div>
+                                    <div class="stat-value">60</div>
+                                </div>
+                            </div>
+                            <div class="chart-container" id="chart-work-order-apply"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 享权工单 -->
+                <div class="data-card">
+                    <div class="data-card-header">
+                        <div class="data-card-title">享权工单</div>
+                        <div class="data-card-tabs">
+                            <div class="data-card-tab active" onclick="switchTab(this, 'work-order-right')">工单记录</div>
+                        </div>
+                    </div>
+                    <div class="data-card-body">
+                        <div class="tab-content active" id="work-order-right">
+                            <div class="stats-row">
+                                <div class="stat-item" style="flex: none; width: 100%;">
+                                    <div class="stat-label">享权工单</div>
+                                    <div class="stat-value">-</div>
+                                </div>
+                            </div>
+                            <div class="empty-state">
+                                <div class="empty-state-icon">&#128230;</div>
+                                <div class="empty-state-text">暂无数据</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="welcome-bg" id="welcomeBg">
+                <div class="welcome-illustration">
+                    <div class="welcome-bg-screen"></div>
+                    <div class="welcome-bg-screen2"></div>
+                    <div class="welcome-screen">
+                        <div class="welcome-screen-bar"></div>
+                        <div class="welcome-screen-bar2"></div>
+                        <div class="welcome-screen-bar3"></div>
+                    </div>
+                    <div class="welcome-deco welcome-deco-1">&#10022;</div>
+                    <div class="welcome-deco welcome-deco-2">&#9679;</div>
+                    <div class="welcome-deco welcome-deco-3">&#11201;</div>
+                    <div class="welcome-deco welcome-deco-4">&#10010;</div>
+                    <div class="welcome-deco welcome-deco-5">&#11200;</div>
+                </div>
+                <div class="welcome-text">
+                    <div class="welcome-line"></div>
+                    <span>WELCOME</span>
+                    <div class="welcome-line"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+    <div class="picker-overlay" id="pickerOverlay" onclick="closeAllDateTimePickers()"></div>
+
+    <script>
+        // ===== 侧边栏 =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
+            } else {
+                sidebar.classList.toggle('collapsed');
+                document.body.classList.toggle('sidebar-collapsed');
+                const btn = document.querySelector('.header-icon-btn[title]');
+                if (btn) btn.title = sidebar.classList.contains('collapsed') ? '展开菜单' : '收起菜单';
+            }
+        }
+        function toggleSubmenu(el) {
+            const li = el.parentElement;
+            li.classList.toggle('open');
+        }
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    showToast('全屏模式不支持: ' + err.message);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // ===== 关闭页面 =====
+        function closePage() {
+            const wrapper = document.getElementById('contentWrapper');
+            const welcome = document.getElementById('welcomeBg');
+            const tabBar = document.getElementById('tabBar');
+            const filterSection = document.getElementById('filterSection');
+            if (wrapper) wrapper.classList.add('hidden');
+            if (welcome) welcome.classList.add('show');
+            if (tabBar) tabBar.style.display = 'none';
+            if (filterSection) filterSection.style.display = 'none';
+        }
+
+        // ===== Tab 切换 =====
+        function switchTab(tabEl, contentId) {
+            const card = tabEl.closest('.data-card');
+            card.querySelectorAll('.data-card-tab').forEach(t => t.classList.remove('active'));
+            tabEl.classList.add('active');
+            card.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const target = document.getElementById(contentId);
+            if (target) {
+                target.classList.add('active');
+                // 首次切换时初始化图表
+                initChartIfNeeded(contentId);
+            }
+        }
+
+        // ===== 菜单点击 =====
+        function onMenuClick(el, hasPage) {
+            if (!hasPage) {
+                showToast('暂无数据');
+                return false;
+            }
+            return true;
+        }
+
+        // openMenuTab：独立页面跳转
+        function openMenuTab(el, title, url, tabId) {
+            var e = event || window.event;
+            if (e && e.preventDefault) e.preventDefault();
+            window.location.href = url;
+            return false;
+        }
+
+        // ===== Toast =====
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // ===== 查询/重置 =====
+        function doQuery() { showToast('查询中...'); }
+        function doReset() { showToast('已重置'); }
+
+        // ===== 日期时间范围选择器 =====
+        let activePicker = null;
+
+        function openDateTimeRangePicker(inputEl, pickerId) {
+            document.querySelectorAll('.datetime-range-picker').forEach(p => p.classList.remove('show'));
+            const picker = document.getElementById(pickerId);
+            picker.classList.add('show');
+            document.getElementById('pickerOverlay').classList.add('show');
+            activePicker = pickerId;
+        }
+
+        function closeDateTimePicker(pickerId) {
+            document.getElementById(pickerId).classList.remove('show');
+            document.getElementById('pickerOverlay').classList.remove('show');
+            activePicker = null;
+        }
+
+        function closeAllDateTimePickers() {
+            document.querySelectorAll('.datetime-range-picker').forEach(p => p.classList.remove('show'));
+            document.getElementById('pickerOverlay').classList.remove('show');
+            activePicker = null;
+        }
+
+        function confirmDateTimeRange(inputId, pickerId) {
+            const picker = document.getElementById(pickerId);
+            const input = document.getElementById(inputId);
+            const startInput = picker.querySelector('input[type="datetime-local"]:first-of-type');
+            const endInput = picker.querySelector('input[type="datetime-local"]:last-of-type');
+            if (startInput.value && endInput.value) {
+                input.value = startInput.value.replace('T', ' ') + ' ~ ' + endInput.value.replace('T', ' ');
+            } else if (startInput.value) {
+                input.value = startInput.value.replace('T', ' ') + ' ~ ';
+            } else if (endInput.value) {
+                input.value = ' ~ ' + endInput.value.replace('T', ' ');
+            }
+            picker.classList.remove('show');
+            document.getElementById('pickerOverlay').classList.remove('show');
+            activePicker = null;
+        }
+
+        function clearDateTimeRange(inputId, pickerId) {
+            const picker = document.getElementById(pickerId);
+            const input = document.getElementById(inputId);
+            picker.querySelectorAll('input[type="datetime-local"]').forEach(el => el.value = '');
+            input.value = '';
+            picker.classList.remove('show');
+            document.getElementById('pickerOverlay').classList.remove('show');
+            activePicker = null;
+        }
+
+        window.addEventListener('click', function(e) {
+            if (!activePicker) return;
+            const picker = document.getElementById(activePicker);
+            const input = document.querySelector('[onclick*="' + activePicker + '"');
+            if (picker && !picker.contains(e.target) && e.target !== input) {
+                picker.classList.remove('show');
+                document.getElementById('pickerOverlay').classList.remove('show');
+                activePicker = null;
+            }
+        });
+
+        // ===== ECharts 图表配置 =====
+        const chartColors = {
+            red: '#c41e24',
+            orange: '#fa8c16',
+            yellow: '#faad14',
+            green: '#52c41a',
+            blue: '#1890ff',
+            cyan: '#13c2c2',
+            purple: '#722ed1'
+        };
+
+        const chartInstances = {};
+        const chartOptions = {
+            'chart-equity-vehicle': {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['25年10月', '25年11月', '25年12月', '26年01月', '26年02月', '26年03月', '26年04月', '26年05月'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                series: [{
+                    data: [19, 15, 20, 6, 1, 18, 12, 3],
+                    type: 'line',
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 8,
+                    lineStyle: { color: chartColors.red, width: 2 },
+                    itemStyle: { color: chartColors.red, borderWidth: 2, borderColor: '#fff' },
+                    areaStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: 'rgba(196,30,36,0.15)' },
+                            { offset: 1, color: 'rgba(196,30,36,0.01)' }
+                        ])
+                    },
+                    label: { show: true, position: 'top', color: chartColors.red, fontSize: 12 }
+                }]
+            },
+            'chart-equity-provider': {
+                tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
+                legend: { bottom: '5%', left: 'center', textStyle: { fontSize: 12 } },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '65%'],
+                    center: ['50%', '45%'],
+                    avoidLabelOverlap: true,
+                    itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: true, formatter: '{b}\n{d}%', fontSize: 12 },
+                    data: [
+                        { value: 129, name: '上海汽检', itemStyle: { color: chartColors.orange } },
+                        { value: 1, name: '国创中心', itemStyle: { color: '#ffd666' } }
+                    ]
+                }]
+            },
+            'chart-apply-record': {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['26年03月', '26年04月', '26年05月', '26年06月', '26年07月'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                series: [{
+                    data: [64, 33, 1, 12, 3],
+                    type: 'bar',
+                    barWidth: '40%',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#faad14' },
+                            { offset: 1, color: '#ffc53d' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    label: { show: true, position: 'top', color: '#333', fontSize: 12 }
+                }]
+            },
+            'chart-apply-status': {
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+                xAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['待上传材料', '申请未通过', '已受理', '已提交'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#666', fontSize: 12 },
+                    inverse: true
+                },
+                series: [{
+                    data: [
+                        { value: 205, itemStyle: { color: chartColors.red } },
+                        { value: 60, itemStyle: { color: chartColors.orange } },
+                        { value: 10, itemStyle: { color: chartColors.yellow } },
+                        { value: 1, itemStyle: { color: chartColors.green } }
+                    ],
+                    type: 'bar',
+                    barWidth: 20,
+                    itemStyle: { borderRadius: [0, 4, 4, 0] },
+                    label: { show: true, position: 'right', color: '#333', fontSize: 12 }
+                }]
+            },
+            'chart-apply-injury': {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['人伤', '剐蹭'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#666', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                series: [
+                    {
+                        name: '数量',
+                        data: [19, 330],
+                        type: 'bar',
+                        barWidth: '30%',
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#fa541c' },
+                                { offset: 1, color: '#ff7a45' }
+                            ]),
+                            borderRadius: [4, 4, 0, 0]
+                        },
+                        label: { show: true, position: 'top', color: '#333', fontSize: 12 }
+                    },
+                    {
+                        name: '占比',
+                        data: [{ value: 5.03, itemStyle: { color: 'transparent' } }, { value: 87.30, itemStyle: { color: 'transparent' } }],
+                        type: 'bar',
+                        barGap: '-100%',
+                        barWidth: '30%',
+                        label: { show: true, position: 'top', color: '#333', fontSize: 12, formatter: '{c} %' }
+                    }
+                ]
+            },
+            'chart-report-record': {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['01月', '02月', '03月', '04月', '05月', '06月', '07月'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                series: [{
+                    data: [21, 13, 17, 2, 1, 4, 0],
+                    type: 'bar',
+                    barWidth: '40%',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: chartColors.red },
+                            { offset: 1, color: '#ff4d4f' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    label: { show: true, position: 'top', color: '#333', fontSize: 12 }
+                }]
+            },
+            'chart-report-conclusion': {
+                tooltip: { trigger: 'item', formatter: '{b}: {d}%' },
+                legend: { bottom: '5%', left: 'center', textStyle: { fontSize: 12 } },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '65%'],
+                    center: ['50%', '45%'],
+                    avoidLabelOverlap: true,
+                    itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+                    label: { show: true, formatter: '{b}\n{d}%', fontSize: 12, color: '#333' },
+                    data: [
+                        { value: 75.86, name: '通过', itemStyle: { color: chartColors.red } },
+                        { value: 24.14, name: '不通过', itemStyle: { color: '#ffd666' } }
+                    ]
+                }]
+            },
+            'chart-report-provider': {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['上海汽检', '国创中心'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#666', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                series: [{
+                    data: [52, 6],
+                    type: 'bar',
+                    barWidth: '40%',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: chartColors.orange },
+                            { offset: 1, color: '#ffc53d' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    label: { show: true, position: 'top', color: '#333', fontSize: 12 }
+                }]
+            },
+            'chart-right-record': {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['10月', '11月', '12月', '01月', '02月', '03月'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                series: [{
+                    data: [13, 18, 13, 23, 15, 3],
+                    type: 'bar',
+                    barWidth: '40%',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: chartColors.green },
+                            { offset: 1, color: '#95de64' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    label: { show: true, position: 'top', color: '#333', fontSize: 12 }
+                }]
+            },
+            'chart-right-status': {
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+                xAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['享权处理中', '享权驳回', '享权完成'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#666', fontSize: 12 },
+                    inverse: true
+                },
+                series: [{
+                    data: [
+                        { value: 57, itemStyle: { color: chartColors.red } },
+                        { value: 2, itemStyle: { color: chartColors.yellow } },
+                        { value: 36, itemStyle: { color: chartColors.orange } }
+                    ],
+                    type: 'bar',
+                    barWidth: 20,
+                    itemStyle: { borderRadius: [0, 4, 4, 0] },
+                    label: { show: true, position: 'right', color: '#333', fontSize: 12 }
+                }]
+            },
+            'chart-work-order-apply': {
+                tooltip: { trigger: 'axis' },
+                grid: { left: '3%', right: '4%', bottom: '3%', top: '10%', containLabel: true },
+                xAxis: {
+                    type: 'category',
+                    data: ['26年02月', '26年03月', '26年04月', '26年05月', '26年06月'],
+                    axisLine: { lineStyle: { color: '#e8e8e8' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLine: { show: false },
+                    splitLine: { lineStyle: { color: '#f0f0f0' } },
+                    axisLabel: { color: '#999', fontSize: 12 }
+                },
+                series: [{
+                    data: [3, 10, 5, 1, 11],
+                    type: 'bar',
+                    barWidth: '40%',
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: chartColors.blue },
+                            { offset: 1, color: '#69c0ff' }
+                        ]),
+                        borderRadius: [4, 4, 0, 0]
+                    },
+                    label: { show: true, position: 'top', color: '#333', fontSize: 12 }
+                }]
+            }
+        };
+
+        function initChart(domId) {
+            if (chartInstances[domId]) return chartInstances[domId];
+            const dom = document.getElementById(domId);
+            if (!dom) return null;
+            const chart = echarts.init(dom);
+            const option = chartOptions[domId];
+            if (option) {
+                chart.setOption(option);
+            }
+            chartInstances[domId] = chart;
+            return chart;
+        }
+
+        function initChartIfNeeded(contentId) {
+            const target = document.getElementById(contentId);
+            if (!target) return;
+            const chartContainer = target.querySelector('.chart-container');
+            if (!chartContainer || !chartContainer.id) return;
+            // 如果图表已初始化，直接 resize
+            if (chartInstances[chartContainer.id]) {
+                chartInstances[chartContainer.id].resize();
+                return;
+            }
+            // 首次初始化
+            requestAnimationFrame(() => {
+                initChart(chartContainer.id);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 只初始化首屏 active tab 的图表（5个），非 active tab 懒加载
+            const activeChartIds = [
+                'chart-equity-vehicle',
+                'chart-apply-record',
+                'chart-report-record',
+                'chart-right-record',
+                'chart-work-order-apply'
+            ];
+            // 使用 requestAnimationFrame 分批初始化，避免阻塞渲染
+            activeChartIds.forEach((id, index) => {
+                requestAnimationFrame(() => {
+                    setTimeout(() => initChart(id), index * 30);
+                });
+            });
+
+            // 窗口 resize 时重新渲染已初始化的图表
+            window.addEventListener('resize', function() {
+                Object.values(chartInstances).forEach(chart => {
+                    if (chart) chart.resize();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

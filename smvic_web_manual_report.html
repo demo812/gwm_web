@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人工报告</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 14px; color: #333; background: #f5f7fa; }
+button, input, select { font-family: inherit; font-size: inherit; outline: none; }
+body.in-iframe .page-header, body.in-iframe .page-sidebar { display: none !important; }
+.page-wrap { padding: 16px 20px; }
+.filter-bar { background: #fff; border-radius: 4px; padding: 16px 20px; border: 1px solid #e8e8e8; margin-bottom: 12px; }
+.filter-row { display: flex; gap: 16px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
+.filter-row:last-child { margin-bottom: 0; }
+.filter-item { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 280px; max-width: 360px; position: relative; }
+.filter-item label { color: #666; font-size: 14px; white-space: nowrap; width: 80px; text-align: right; }
+.filter-item input, .filter-item select { flex: 1; height: 32px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 4px; }
+.filter-item input:focus, .filter-item select:focus { border-color: #003366; }
+.filter-actions { display: flex; gap: 10px; margin-left: auto; align-items: flex-end; }
+
+/* 时间范围 picker */
+.datetime-range-input { cursor: pointer; background: #fff; flex: 1; height: 32px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 4px; }
+.datetime-range-input:focus { border-color: #003366; }
+.datetime-range-picker { display: none; position: absolute; top: 100%; left: 88px; right: 0; background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 50; margin-top: 4px; padding: 12px; }
+.datetime-range-picker.show { display: block; }
+.picker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; font-size: 14px; font-weight: 500; color: #333; }
+.picker-close { font-size: 18px; color: #999; cursor: pointer; }
+.picker-close:hover { color: #666; }
+.picker-body { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+.picker-field { display: flex; align-items: center; gap: 8px; }
+.picker-field label { min-width: 70px; text-align: right; font-size: 14px; color: #666; }
+.picker-field input { flex: 1; height: 34px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 4px; }
+.picker-footer { display: flex; justify-content: flex-end; gap: 8px; }
+.btn-sm { padding: 5px 14px; font-size: 14px; height: 28px; }
+.picker-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.01); z-index: 40; }
+.picker-overlay.show { display: block; }
+
+.btn { height: 32px; padding: 0 16px; border-radius: 4px; cursor: pointer; font-size: 14px; border: 1px solid transparent; }
+.btn-primary { background: #003366; color: #fff; border-color: #003366; }
+.btn-default { background: #fff; color: #666; border-color: #d9d9d9; }
+.btn:hover { opacity: 0.9; }
+.status-tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+.status-tab { padding: 6px 16px; border-radius: 4px 4px 0 0; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; background: transparent; }
+.status-tab:hover { color: #003366; }
+.status-tab.active { color: #003366; border-bottom-color: #003366; font-weight: 500; }
+.action-bar { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 12px; }
+.table-wrap { background: #fff; border: 1px solid #e8e8e8; border-radius: 4px; overflow: hidden; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.data-table th { background: #fafafa; color: #333; font-weight: 500; text-align: left; padding: 12px 16px; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+.data-table td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #666; }
+.data-table tr:hover td { background: #fafafa; }
+.data-table .col-checkbox { width: 40px; text-align: center; }
+.data-table .col-op { width: 180px; white-space: nowrap; }
+.data-table .col-op a { color: #003366; margin-right: 10px; cursor: pointer; }
+.data-table .col-op a:hover { text-decoration: underline; }
+.data-table .col-op a.disabled { color: #999; cursor: not-allowed; pointer-events: none; }
+.data-table .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+.status-badge.blue { background: #e6f0ff; color: #003366; }
+.status-badge.green { background: #e6f7e6; color: #52c41a; }
+.status-badge.orange { background: #fff7e6; color: #fa8c16; }
+.status-badge.gray { background: #f5f5f5; color: #999; }
+.pagination-wrap { display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: 12px 16px; }
+.pagination { display: flex; gap: 4px; align-items: center; }
+.pagination button { min-width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid #d9d9d9; border-radius: 4px; background: #fff; color: #666; font-size: 13px; cursor: pointer; }
+.pagination button.active { background: #003366; color: #fff; border-color: #003366; }
+.pagination button:hover:not(.active) { border-color: #003366; color: #003366; }
+.pagination button:disabled { color: #ccc; cursor: not-allowed; border-color: #e8e8e8; }
+.pagination .page-input { width: 40px; height: 28px; text-align: center; border: 1px solid #d9d9d9; border-radius: 4px; }
+.page-size { display: flex; align-items: center; gap: 6px; color: #666; font-size: 13px; }
+.page-size select { height: 28px; border: 1px solid #d9d9d9; border-radius: 4px; padding: 0 4px; }
+.modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center; }
+.modal-overlay.show { display: flex; }
+.modal-box { background: #fff; border-radius: 8px; width: 520px; max-width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.15); max-height: 90vh; overflow-y: auto; }
+.modal-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h3 { font-size: 16px; font-weight: 600; color: #333; }
+.modal-close { font-size: 20px; color: #999; cursor: pointer; line-height: 1; }
+.modal-close:hover { color: #666; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 12px 20px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+.form-row { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.form-row label { width: 100px; font-size: 14px; color: #666; text-align: right; flex-shrink: 0; }
+.form-row .form-input { flex: 1; }
+.form-row input, .form-row select, .form-row textarea { width: 100%; height: 36px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 4px; }
+.form-row textarea { height: 80px; padding: 8px 10px; resize: vertical; }
+.form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color: #003366; }
+.form-row .required::before { content: '* '; color: #ff4d4f; }
+.upload-area { border: 2px dashed #d9d9d9; border-radius: 4px; padding: 24px; text-align: center; cursor: pointer; color: #999; transition: border-color 0.2s; }
+.upload-area:hover { border-color: #003366; color: #003366; }
+
+/* Toast */
+.toast { display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 10px 24px; border-radius: 4px; font-size: 14px; z-index: 3000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.toast.show { display: block; }
+</style>
+</head>
+<body>
+<script> if (window.self === window.top) { window.location.href = 'smvic_web_index.html'; } else { document.body.classList.add('in-iframe'); } </script>
+
+<div class="page-wrap">
+    <div class="filter-bar">
+        <div class="filter-row">
+            <div class="filter-item">
+                <label>申请服务时间</label>
+                <input type="text" class="datetime-range-input" id="applyTimeInput" placeholder="请选择时间范围" readonly onclick="openDateTimeRangePicker('applyTimeInput','applyTimePicker')">
+                <div class="datetime-range-picker" id="applyTimePicker">
+                    <div class="picker-header"><span>选择时间范围</span><span class="picker-close" onclick="closeDateTimePicker('applyTimePicker')">&times;</span></div>
+                    <div class="picker-body">
+                        <div class="picker-field"><label>开始日期</label><input type="date" id="applyTimeStart"></div>
+                        <div class="picker-field"><label>结束日期</label><input type="date" id="applyTimeEnd"></div>
+                    </div>
+                    <div class="picker-footer">
+                        <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('applyTimeInput','applyTimePicker')">清空</button>
+                        <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('applyTimeInput','applyTimePicker')">确定</button>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item"><label>VIN</label><input type="text" placeholder="请输入VIN"></div>
+            <div class="filter-item">
+                <label>参考事故时间</label>
+                <input type="text" class="datetime-range-input" id="accidentTimeInput" placeholder="请选择时间范围" readonly onclick="openDateTimeRangePicker('accidentTimeInput','accidentTimePicker')">
+                <div class="datetime-range-picker" id="accidentTimePicker">
+                    <div class="picker-header"><span>选择时间范围</span><span class="picker-close" onclick="closeDateTimePicker('accidentTimePicker')">&times;</span></div>
+                    <div class="picker-body">
+                        <div class="picker-field"><label>开始日期</label><input type="date" id="accidentTimeStart"></div>
+                        <div class="picker-field"><label>结束日期</label><input type="date" id="accidentTimeEnd"></div>
+                    </div>
+                    <div class="picker-footer">
+                        <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('accidentTimeInput','accidentTimePicker')">清空</button>
+                        <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('accidentTimeInput','accidentTimePicker')">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-item"><label>报告结论</label><select><option>全部</option><option>通过</option><option>不通过</option></select></div>
+            <div class="filter-item"><label>报告编号</label><input type="text" placeholder="请输入报告编号"></div>
+            <div class="filter-item"><label>服务车企</label><select><option>请选择服务车企</option><option>长城汽车</option></select></div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-item"><label>主检人员</label><input type="text" placeholder="请输入主检人员"></div>
+            <div class="filter-item">
+                <label>主检时间</label>
+                <input type="text" class="datetime-range-input" id="checkTimeInput" placeholder="请选择时间范围" readonly onclick="openDateTimeRangePicker('checkTimeInput','checkTimePicker')">
+                <div class="datetime-range-picker" id="checkTimePicker">
+                    <div class="picker-header"><span>选择时间范围</span><span class="picker-close" onclick="closeDateTimePicker('checkTimePicker')">&times;</span></div>
+                    <div class="picker-body">
+                        <div class="picker-field"><label>开始日期</label><input type="date" id="checkTimeStart"></div>
+                        <div class="picker-field"><label>结束日期</label><input type="date" id="checkTimeEnd"></div>
+                    </div>
+                    <div class="picker-footer">
+                        <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('checkTimeInput','checkTimePicker')">清空</button>
+                        <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('checkTimeInput','checkTimePicker')">确定</button>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item"><label>审核人员</label><input type="text" placeholder="请输入审核人员"></div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-item">
+                <label>审核时间</label>
+                <input type="text" class="datetime-range-input" id="auditTimeInput" placeholder="请选择时间范围" readonly onclick="openDateTimeRangePicker('auditTimeInput','auditTimePicker')">
+                <div class="datetime-range-picker" id="auditTimePicker">
+                    <div class="picker-header"><span>选择时间范围</span><span class="picker-close" onclick="closeDateTimePicker('auditTimePicker')">&times;</span></div>
+                    <div class="picker-body">
+                        <div class="picker-field"><label>开始日期</label><input type="date" id="auditTimeStart"></div>
+                        <div class="picker-field"><label>结束日期</label><input type="date" id="auditTimeEnd"></div>
+                    </div>
+                    <div class="picker-footer">
+                        <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('auditTimeInput','auditTimePicker')">清空</button>
+                        <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('auditTimeInput','auditTimePicker')">确定</button>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item"><label>批准人员</label><input type="text" placeholder="请输入批准人员"></div>
+            <div class="filter-item">
+                <label>批准时间</label>
+                <input type="text" class="datetime-range-input" id="approveTimeInput" placeholder="请选择时间范围" readonly onclick="openDateTimeRangePicker('approveTimeInput','approveTimePicker')">
+                <div class="datetime-range-picker" id="approveTimePicker">
+                    <div class="picker-header"><span>选择时间范围</span><span class="picker-close" onclick="closeDateTimePicker('approveTimePicker')">&times;</span></div>
+                    <div class="picker-body">
+                        <div class="picker-field"><label>开始日期</label><input type="date" id="approveTimeStart"></div>
+                        <div class="picker-field"><label>结束日期</label><input type="date" id="approveTimeEnd"></div>
+                    </div>
+                    <div class="picker-footer">
+                        <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('approveTimeInput','approveTimePicker')">清空</button>
+                        <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('approveTimeInput','approveTimePicker')">确定</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="filter-row">
+            <div class="filter-item">
+                <label>创建时间</label>
+                <input type="text" class="datetime-range-input" id="createTimeInput" placeholder="请选择时间范围" readonly onclick="openDateTimeRangePicker('createTimeInput','createTimePicker')">
+                <div class="datetime-range-picker" id="createTimePicker">
+                    <div class="picker-header"><span>选择时间范围</span><span class="picker-close" onclick="closeDateTimePicker('createTimePicker')">&times;</span></div>
+                    <div class="picker-body">
+                        <div class="picker-field"><label>开始日期</label><input type="date" id="createTimeStart"></div>
+                        <div class="picker-field"><label>结束日期</label><input type="date" id="createTimeEnd"></div>
+                    </div>
+                    <div class="picker-footer">
+                        <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('createTimeInput','createTimePicker')">清空</button>
+                        <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('createTimeInput','createTimePicker')">确定</button>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-item">
+                <label>更新时间</label>
+                <input type="text" class="datetime-range-input" id="updateTimeInput" placeholder="请选择时间范围" readonly onclick="openDateTimeRangePicker('updateTimeInput','updateTimePicker')">
+                <div class="datetime-range-picker" id="updateTimePicker">
+                    <div class="picker-header"><span>选择时间范围</span><span class="picker-close" onclick="closeDateTimePicker('updateTimePicker')">&times;</span></div>
+                    <div class="picker-body">
+                        <div class="picker-field"><label>开始日期</label><input type="date" id="updateTimeStart"></div>
+                        <div class="picker-field"><label>结束日期</label><input type="date" id="updateTimeEnd"></div>
+                    </div>
+                    <div class="picker-footer">
+                        <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('updateTimeInput','updateTimePicker')">清空</button>
+                        <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('updateTimeInput','updateTimePicker')">确定</button>
+                    </div>
+                </div>
+            </div>
+            <div class="filter-actions">
+                <button class="btn btn-primary" onclick="doSearch()">查询</button>
+                <button class="btn btn-default" onclick="doReset()">重置</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-tabs">
+        <div class="status-tab active" onclick="switchStatus(this, '')">全部</div>
+        <div class="status-tab" onclick="switchStatus(this, 'draft_uploaded')">初稿已上传</div>
+        <div class="status-tab" onclick="switchStatus(this, 'approved')">已审批</div>
+        <div class="status-tab" onclick="switchStatus(this, 'stamped')">已盖章</div>
+    </div>
+
+    <div class="action-bar">
+        <button class="btn btn-primary" onclick="showUploadModal()">初稿上传</button>
+        <button class="btn btn-primary" onclick="batchDownloadFinal()">批量下载终稿</button>
+    </div>
+
+    <div class="table-wrap">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="col-checkbox"><input type="checkbox" id="checkAll" onclick="toggleCheckAll()"></th>
+                    <th>报告编号</th>
+                    <th>状态</th>
+                    <th>服务车企</th>
+                    <th>申请服务时间</th>
+                    <th>VIN</th>
+                    <th>车型</th>
+                    <th>参考事故时间</th>
+                    <th class="col-op">操作</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <tr data-status="draft_uploaded">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000110</td>
+                    <td><span class="status-badge blue">初稿已上传</span></td>
+                    <td>长城汽车</td>
+                    <td>-</td>
+                    <td>LG3232323...</td>
+                    <td>高山</td>
+                    <td>-</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000110')">初稿预览</a>
+                        <a onclick="updateDraft('DA260000110')">初稿更新</a>
+                        <a class="disabled">终稿下载</a>
+                        <a class="disabled">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="draft_uploaded">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000112</td>
+                    <td><span class="status-badge blue">初稿已上传</span></td>
+                    <td>长城汽车</td>
+                    <td>-</td>
+                    <td>LG3232323...</td>
+                    <td>蓝山</td>
+                    <td>-</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000112')">初稿预览</a>
+                        <a onclick="updateDraft('DA260000112')">初稿更新</a>
+                        <a class="disabled">终稿下载</a>
+                        <a class="disabled">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="stamped">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000067</td>
+                    <td><span class="status-badge green">已盖章</span></td>
+                    <td>长城汽车</td>
+                    <td>2026-01-30 15:50:42</td>
+                    <td>175207137...</td>
+                    <td>175207137...</td>
+                    <td>2026-01-30 15:50:42</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000067')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000067')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000067')">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="approved">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000067</td>
+                    <td><span class="status-badge orange">已审批</span></td>
+                    <td>长城汽车</td>
+                    <td>2026-01-30 15:50:42</td>
+                    <td>175207137...</td>
+                    <td>175207137...</td>
+                    <td>2026-01-30 15:50:42</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000067')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000067')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000067')">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="stamped">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000067</td>
+                    <td><span class="status-badge green">已盖章</span></td>
+                    <td>长城汽车</td>
+                    <td>2026-01-15 11:40:36</td>
+                    <td>LGW28X6J9...</td>
+                    <td>WAY M83</td>
+                    <td>2026-01-15 11:40:36</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000067')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000067')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000067')">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="stamped">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000020</td>
+                    <td><span class="status-badge green">已盖章</span></td>
+                    <td>长城汽车</td>
+                    <td>-</td>
+                    <td>A46106010...</td>
+                    <td>wey20</td>
+                    <td>2026-01-13 17:22:43</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000020')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000020')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000020')">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="stamped">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000020</td>
+                    <td><span class="status-badge green">已盖章</span></td>
+                    <td>长城汽车</td>
+                    <td>2026-01-13 17:22:43</td>
+                    <td>585204294A...</td>
+                    <td>WEY20test</td>
+                    <td>2026-01-13 17:22:43</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000020')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000020')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000020')">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="stamped">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000066</td>
+                    <td><span class="status-badge green">已盖章</span></td>
+                    <td>长城汽车</td>
+                    <td>-</td>
+                    <td>58461003R...</td>
+                    <td>WEY66</td>
+                    <td>2026-01-13 17:22:43</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000066')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000066')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000066')">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="stamped">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000065</td>
+                    <td><span class="status-badge green">已盖章</span></td>
+                    <td>长城汽车</td>
+                    <td>2026-01-13 17:20:57</td>
+                    <td>72230222B1...</td>
+                    <td>SHANDIANcat</td>
+                    <td>2026-01-13 17:20:57</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000065')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000065')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000065')">终稿预览</a>
+                    </td>
+                </tr>
+                <tr data-status="stamped">
+                    <td class="col-checkbox"><input type="checkbox"></td>
+                    <td>DA260000019</td>
+                    <td><span class="status-badge green">已盖章</span></td>
+                    <td>长城汽车</td>
+                    <td>2026-01-13 17:09:08</td>
+                    <td>Y9520329Y...</td>
+                    <td>ORAcar</td>
+                    <td>2026-01-13 17:09:08</td>
+                    <td class="col-op">
+                        <a onclick="previewDraft('DA260000019')">初稿预览</a>
+                        <a class="disabled">初稿更新</a>
+                        <a onclick="downloadFinal('DA260000019')">终稿下载</a>
+                        <a onclick="previewFinal('DA260000019')">终稿预览</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="pagination-wrap">
+        <span style="color:#666;font-size:13px;">共 10 条</span>
+        <div class="page-size"><select><option>10条/页</option><option>20条/页</option><option>50条/页</option></select></div>
+        <div class="pagination">
+            <button disabled>&lt;</button>
+            <button class="active">1</button>
+            <button disabled>&gt;</button>
+        </div>
+        <span style="color:#666;font-size:13px;">前往 <input type="text" class="page-input" value="1"> 页</span>
+    </div>
+</div>
+
+<!-- picker 遮罩 -->
+<div id="pickerOverlay" class="picker-overlay" onclick="closeAllDateTimePickers()"></div>
+
+<!-- 初稿上传弹窗 -->
+<div class="modal-overlay" id="uploadModal">
+    <div class="modal-box">
+        <div class="modal-header"><h3>初稿上传</h3><span class="modal-close" onclick="closeUploadModal()">&times;</span></div>
+        <div class="modal-body">
+            <div class="form-row"><label class="required">报告编号</label><div class="form-input"><input type="text" id="uploadReportNo" placeholder="请输入报告编号"></div></div>
+            <div class="form-row"><label class="required">报告结论</label><div class="form-input"><select id="uploadConclusion"><option>通过</option><option>不通过</option></select></div></div>
+            <div class="form-row" id="reasonRow" style="display:none;"><label class="required">不通过原因</label><div class="form-input"><textarea id="uploadReason" placeholder="请输入不通过原因"></textarea></div></div>
+            <div class="form-row"><label class="required">选择文件</label><div class="form-input"><div class="upload-area" onclick="document.getElementById('fileInput').click()">点击上传或拖拽文件到此处<br><small style="color:#999">支持 .doc, .docx, .pdf</small></div><input type="file" id="fileInput" style="display:none" accept=".doc,.docx,.pdf"></div></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-default" onclick="closeUploadModal()">取消</button>
+            <button class="btn btn-primary" onclick="submitUpload()">确定</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+// ===== Toast =====
+var _toastTimer = null;
+function showToast(msg) {
+    var toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+
+// ===== 时间范围 picker =====
+var activePicker = null;
+function openDateTimeRangePicker(inputId, pickerId) {
+    document.querySelectorAll('.datetime-range-picker').forEach(function(p) { p.classList.remove('show'); });
+    document.getElementById(pickerId).classList.add('show');
+    document.getElementById('pickerOverlay').classList.add('show');
+    activePicker = pickerId;
+}
+function closeDateTimePicker(pickerId) {
+    document.getElementById(pickerId).classList.remove('show');
+    document.getElementById('pickerOverlay').classList.remove('show');
+    activePicker = null;
+}
+function closeAllDateTimePickers() {
+    document.querySelectorAll('.datetime-range-picker').forEach(function(p) { p.classList.remove('show'); });
+    document.getElementById('pickerOverlay').classList.remove('show');
+    activePicker = null;
+}
+function confirmDateTimeRange(inputId, pickerId) {
+    var picker = document.getElementById(pickerId);
+    var input = document.getElementById(inputId);
+    var startInput = picker.querySelectorAll('input[type="date"]')[0];
+    var endInput = picker.querySelectorAll('input[type="date"]')[1];
+    if (startInput.value && endInput.value) { input.value = startInput.value + ' ~ ' + endInput.value; }
+    else if (startInput.value) { input.value = startInput.value + ' ~ '; }
+    else if (endInput.value) { input.value = ' ~ ' + endInput.value; }
+    picker.classList.remove('show');
+    document.getElementById('pickerOverlay').classList.remove('show');
+    activePicker = null;
+}
+function clearDateTimeRange(inputId, pickerId) {
+    var picker = document.getElementById(pickerId);
+    var input = document.getElementById(inputId);
+    picker.querySelectorAll('input[type="date"]').forEach(function(el) { el.value = ''; });
+    input.value = '';
+    picker.classList.remove('show');
+    document.getElementById('pickerOverlay').classList.remove('show');
+    activePicker = null;
+}
+
+// ===== 状态切换 =====
+function switchStatus(el, status) {
+    document.querySelectorAll('.status-tab').forEach(function(t) { t.classList.remove('active'); });
+    el.classList.add('active');
+    document.querySelectorAll('#tableBody tr').forEach(function(row) {
+        row.style.display = (status === '' || row.getAttribute('data-status') === status) ? '' : 'none';
+    });
+}
+
+// ===== 其他函数 =====
+function doSearch() { showToast('查询'); }
+function doReset() {
+    document.querySelectorAll('.filter-item input[type="text"], .filter-item select').forEach(function(el) { el.value = ''; });
+    document.querySelectorAll('.datetime-range-picker input[type="date"]').forEach(function(el) { el.value = ''; });
+}
+function toggleCheckAll() { var checked = document.getElementById('checkAll').checked; document.querySelectorAll('.col-checkbox input[type="checkbox"]').forEach(function(cb) { cb.checked = checked; }); }
+function previewDraft(no) { showToast('预览初稿: ' + no); }
+function updateDraft(no) { document.getElementById('uploadReportNo').value = no; document.getElementById('uploadModal').classList.add('show'); }
+function downloadFinal(no) { showToast('下载终稿: ' + no); }
+function previewFinal(no) { showToast('预览终稿: ' + no); }
+function batchDownloadFinal() { showToast('批量下载终稿'); }
+function showUploadModal() { document.getElementById('uploadReportNo').value = ''; document.getElementById('uploadModal').classList.add('show'); }
+function closeUploadModal() { document.getElementById('uploadModal').classList.remove('show'); }
+function submitUpload() { showToast('上传成功'); closeUploadModal(); }
+document.getElementById('uploadConclusion').addEventListener('change', function() { document.getElementById('reasonRow').style.display = this.value === '不通过' ? 'flex' : 'none'; });
+</script>
+</body>
+</html>

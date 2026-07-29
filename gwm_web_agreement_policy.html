@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <base href="./">
+    <title>长城辅助驾驶保障服务平台 - 协议政策</title>
+    <link rel="stylesheet" href="./css/style.css">
+
+    <script>
+        if (window.self !== window.top) {
+            document.documentElement.classList.add('in-iframe');
+        }
+    </script>
+    <style>
+        html.in-iframe #sidebar,
+        html.in-iframe .header,
+        html.in-iframe #tabBar,
+        html.in-iframe #sidebar-overlay,
+        html.in-iframe #welcomeBg,
+        html.in-iframe .welcome-bg.show {
+            display: none !important;
+        }
+        html.in-iframe #contentWrapper,
+        html.in-iframe #contentWrapper.hidden {
+            display: block !important;
+        }
+        html.in-iframe .main-wrapper {
+            margin-left: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        /* 页面布局：筛选区固定，表格区滚动 */
+        #contentWrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+        }
+        .filter-section {
+            flex-shrink: 0;
+            background: #fff;
+        }
+        .table-section {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            background: #fff;
+            padding: 0 20px 20px;
+        }
+        .data-table {
+            width: 100%;
+        }
+        .filter-row-buttons {
+            margin-bottom: 0;
+        }
+        .filter-row-buttons + .filter-row-buttons {
+            margin-top: 10px;
+        }
+        .filter-row-buttons .filter-item {
+            flex: 1 1 auto !important;
+            justify-content: flex-end;
+        }
+        .datetime-icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        /* 弹窗样式补充 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 2001;
+        }
+        .modal-box-preview { max-width: 800px; }
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .modal-title { font-size: 16px; font-weight: 600; }
+        .modal-close { font-size: 20px; color: #999; cursor: pointer; }
+        .modal-body { padding: 20px; overflow-y: auto; }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 12px 20px;
+            border-top: 1px solid #e8e8e8;
+        }
+        .form-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .form-label {
+            width: 130px;
+            text-align: right;
+            line-height: 32px;
+            flex-shrink: 0;
+            font-size: 14px;
+            color: #333;
+        }
+        .form-control {
+            flex: 1;
+            min-width: 0;
+            height: 32px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            padding: 0 10px;
+            font-size: 14px;
+        }
+        textarea.form-control {
+            height: auto;
+            min-height: 80px;
+            padding: 8px 10px;
+            resize: vertical;
+        }
+        .required { color: #D6000F; margin-right: 2px; }
+        .char-count {
+            font-size: 12px;
+            color: #999;
+            margin-left: 142px;
+            margin-top: -10px;
+        }
+        .upload-area {
+            flex: 1;
+            border: 1px dashed #d9d9d9;
+            border-radius: 4px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .upload-area:hover { border-color: var(--primary); }
+        .upload-placeholder { display: flex; flex-direction: column; align-items: center; gap: 6px; color: #999; font-size: 14px; }
+        .upload-preview { display: flex; align-items: center; gap: 10px; }
+        .preview-file-name { font-size: 14px; color: #333; }
+        .upload-remove { background: none; border: none; color: #D6000F; cursor: pointer; font-size: 14px; }
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            z-index: 3000;
+            display: none;
+        }
+    </style>
+
+    <script>
+        if (window.self !== window.top) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const sidebar = document.getElementById('sidebar');
+                const header = document.querySelector('.header');
+                const tabBar = document.getElementById('tabBar');
+                const mainWrapper = document.querySelector('.main-wrapper');
+                const sidebarOverlay = document.getElementById('sidebar-overlay');
+                const wrapper = document.getElementById('contentWrapper');
+                const welcome = document.getElementById('welcomeBg');
+                if (sidebar) sidebar.style.setProperty('display', 'none', 'important');
+                if (header) header.style.setProperty('display', 'none', 'important');
+                if (tabBar) tabBar.style.setProperty('display', 'none', 'important');
+                if (sidebarOverlay) sidebarOverlay.style.setProperty('display', 'none', 'important');
+                if (mainWrapper) {
+                    mainWrapper.style.setProperty('margin-left', '0', 'important');
+                    mainWrapper.style.setProperty('margin-top', '0', 'important');
+                }
+                if (wrapper) {
+                    wrapper.classList.remove('hidden');
+                    wrapper.style.setProperty('display', 'block', 'important');
+                }
+                if (welcome) {
+                    welcome.classList.remove('show');
+                    welcome.style.setProperty('display', 'none', 'important');
+                }
+                document.body.classList.remove('sidebar-collapsed');
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://www.gwm.com.cn/favicon.ico" alt="logo" onerror="this.style.display='none'">
+            <span>长城汽车</span>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="gwm_web_dashboard.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 5"/></svg><span>数据概览</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="2"/><path d="M8 21l4-3 4 3"/></svg><span>权益管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '权益车辆', 'gwm_web_equity_vehicle.html', 'equity_vehicle')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="9" rx="2"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg><span>权益车辆</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '车型配置', 'gwm_web_model_config.html', 'model_config')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>车型配置</span></a></li>
+                        <li><a href="gwm_web_poster.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 16"/></svg><span>权益海报</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>投保管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '预投记录', 'gwm_web_pre_insurance.html', 'pre_insurance')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>预投记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '投保记录', 'gwm_web_insurance_record.html', 'insurance_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg><span>投保记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '异常记录', 'gwm_web_exception_record.html', 'exception_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>异常记录</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>保单管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '保单记录', 'gwm_web_policy.html', 'policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>保单记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '下载记录', 'gwm_web_download.html', 'download')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>下载记录</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="gwm_web_return.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span>退车管理</span></a></li>
+                <li class="has-submenu open">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>申请管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="gwm_web_application.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>申请记录</span></a></li>
+                        <li class="active"><a href="gwm_web_agreement_policy.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>协议政策</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>享权管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权记录', 'gwm_web_enjoyment_record.html', 'enjoyment_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg><span>享权记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权说明', 'gwm_web_enjoyment_desc.html', 'enjoyment_desc')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>享权说明</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg><span>异常工单</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '申请工单', 'gwm_web_abnormal_workorder.html', 'abnormal_workorder')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg><span>申请工单</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="gwm_web_export.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>导出管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>存证管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据存证', 'gwm_web_data_evidence.html', 'data_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>数据存证</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '报告存证', 'gwm_web_report_evidence.html', 'report_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>报告存证</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据校验', 'gwm_web_data_verify.html', 'data_verify')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>数据校验</span></a></li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '模型管理', 'gwm_web_model_manage.html', 'model_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg><span>模型管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>系统管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '用户管理', 'gwm_web_user_manage.html', 'user_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>用户管理</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '角色权限', 'gwm_web_role_permission.html', 'role_permission')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>角色权限</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return onMenuClick(this, false)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>邮件通知</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '日志管理', 'gwm_web_log_management.html', 'log_management')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>日志管理</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <div class="header">
+            <button class="header-menu-btn" onclick="toggleSidebar()" title="折叠/展开菜单">
+                <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="header-title">辅助驾驶保障服务平台</div>
+            <div class="header-right">
+                <span class="header-user">管理员</span>
+            </div>
+        </div>
+
+        <div class="tab-bar" id="tabBar">
+            <div class="tab-item" id="pageTab">
+                协议政策 <span class="tab-close" onclick="closePage()">&times;</span>
+            </div>
+        </div>
+
+        <div class="content-wrapper" id="contentWrapper">
+            <div class="page-container">
+                <!-- 筛选区 -->
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-item">
+                            <label class="filter-label">协议类型</label>
+                            <select class="filter-select" id="filterType">
+                                <option value="">全部</option>
+                                <option value="service">用户协议</option>
+                                <option value="privacy">隐私政策</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label class="filter-label">版本号</label>
+                            <input type="text" class="filter-input" id="filterVersion" placeholder="请输入版本号">
+                        </div>
+                        <div class="filter-item">
+                            <label class="filter-label">创建人</label>
+                            <input type="text" class="filter-input" id="filterCreator" placeholder="请输入创建人">
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <div class="filter-item">
+                            <label class="filter-label">创建时间</label>
+                            <input type="text" class="filter-input datetime-range-input" id="createTimeRange" placeholder="请选择 开始时间 - 结束时间" readonly onclick="openDateTimeRangePicker(this, 'createTimePicker')">
+                            <svg class="datetime-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#999" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            <div class="datetime-range-picker" id="createTimePicker">
+                                <div class="picker-header">
+                                    <span>选择时间范围</span>
+                                    <span class="picker-close" onclick="closeDateTimePicker('createTimePicker')">&times;</span>
+                                </div>
+                                <div class="picker-body">
+                                    <div class="picker-field">
+                                        <label>开始时间</label>
+                                        <input type="datetime-local" id="createTimeStart">
+                                    </div>
+                                    <div class="picker-field">
+                                        <label>结束时间</label>
+                                        <input type="datetime-local" id="createTimeEnd">
+                                    </div>
+                                </div>
+                                <div class="picker-footer">
+                                    <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('createTimeRange', 'createTimePicker')">清空</button>
+                                    <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('createTimeRange', 'createTimePicker')">确定</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-item">
+                            <label class="filter-label">更新人</label>
+                            <input type="text" class="filter-input" id="filterUpdater" placeholder="请输入更新人">
+                        </div>
+                        <div class="filter-item">
+                            <label class="filter-label">更新时间</label>
+                            <input type="text" class="filter-input datetime-range-input" id="updateTimeRange" placeholder="请选择 开始时间 - 结束时间" readonly onclick="openDateTimeRangePicker(this, 'updateTimePicker')">
+                            <svg class="datetime-icon" viewBox="0 0 24 24" width="16" height="16" stroke="#999" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            <div class="datetime-range-picker" id="updateTimePicker">
+                                <div class="picker-header">
+                                    <span>选择时间范围</span>
+                                    <span class="picker-close" onclick="closeDateTimePicker('updateTimePicker')">&times;</span>
+                                </div>
+                                <div class="picker-body">
+                                    <div class="picker-field">
+                                        <label>开始时间</label>
+                                        <input type="datetime-local" id="updateTimeStart">
+                                    </div>
+                                    <div class="picker-field">
+                                        <label>结束时间</label>
+                                        <input type="datetime-local" id="updateTimeEnd">
+                                    </div>
+                                </div>
+                                <div class="picker-footer">
+                                    <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('updateTimeRange', 'updateTimePicker')">清空</button>
+                                    <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('updateTimeRange', 'updateTimePicker')">确定</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-row filter-row-last filter-row-buttons">
+                        <div class="filter-item" style="flex: 1 1 auto !important; justify-content: flex-end;">
+                            <button class="btn btn-default" onclick="doReset()">重置</button>
+                            <button class="btn btn-primary" onclick="doQuery()">查询</button>
+                        </div>
+                    </div>
+                    <div class="filter-row filter-row-buttons">
+                        <div class="filter-item" style="flex: 1 1 auto !important; justify-content: flex-end;">
+                            <button class="btn btn-primary" onclick="openAddAgreement('service')">添加用户协议</button>
+                            <button class="btn btn-primary" onclick="openAddAgreement('privacy')">添加隐私政策</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 表格区 -->
+                <div class="table-section">
+                    <table class="data-table" id="agreementTable">
+                        <thead>
+                            <tr>
+                                <th>协议类型</th>
+                                <th>版本号</th>
+                                <th>版本说明</th>
+                                <th>协议附件</th>
+                                <th>创建人</th>
+                                <th>创建时间</th>
+                                <th>更新人</th>
+                                <th>更新时间</th>
+                                <th class="col-action">操作区</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                    <div class="pagination">
+                        <span class="pagination-info">共 <span id="totalCount">2</span> 条</span>
+                        <select class="page-size" id="pageSize">
+                            <option value="10">10条/页</option>
+                            <option value="20">20条/页</option>
+                            <option value="50">50条/页</option>
+                        </select>
+                        <button class="page-btn" onclick="prevPage()">&lt;</button>
+                        <button class="page-btn active" id="currentPageBtn">1</button>
+                        <button class="page-btn" onclick="nextPage()">&gt;</button>
+                        <span class="pagination-jump">前往 <input type="number" class="page-input" id="pageInput" min="1" value="1"> 页</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加/编辑协议弹窗 -->
+    <div class="modal-overlay" id="addModal" style="display:none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span class="modal-title" id="modalTitle">添加用户协议</span>
+                <span class="modal-close" onclick="closeAddModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-row">
+                    <label class="form-label"><span class="required">*</span>类型</label>
+                    <select class="form-control" id="addType">
+                        <option value="service">用户协议</option>
+                        <option value="privacy">隐私政策</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="form-label"><span class="required">*</span>版本号</label>
+                    <input type="text" class="form-control" id="addVersion" placeholder="请输入版本号（小写字母v+主版本号+次版本号+修订号）">
+                </div>
+                <div class="form-row" id="versionDescRow">
+                    <label class="form-label">版本说明</label>
+                    <textarea class="form-control" id="addVersionDesc" maxlength="200" placeholder="请输入版本说明" oninput="updateCharCount(this, 'descCount')"></textarea>
+                    <span class="char-count"><span id="descCount">0</span>/200</span>
+                </div>
+                <div class="form-row" id="versionFileRow" style="display:none;">
+                    <label class="form-label">协议附件</label>
+                    <div class="upload-area" id="fileUpload" onclick="triggerFileInput()">
+                        <input type="file" id="fileInput" style="display:none;" accept="image/*,.pdf" onchange="handleFileUpload(event)">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <svg viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="32" height="32" fill="none" stroke="#999"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <div>点击上传图片或PDF</div>
+                        </div>
+                        <div class="upload-preview" id="uploadPreview" style="display:none;">
+                            <img id="previewImg" src="" alt="preview" style="display:none;">
+                            <div id="previewFileName" class="preview-file-name"></div>
+                            <button type="button" class="upload-remove" onclick="removeFile(event)">删除</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row" id="versionContentRow">
+                    <label class="form-label">协议内容</label>
+                    <textarea class="form-control form-content" id="addContent" maxlength="5000" placeholder="请输入协议内容" oninput="updateCharCount(this, 'contentCount')"></textarea>
+                    <span class="char-count"><span id="contentCount">0</span>/5000</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" onclick="closeAddModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitAdd()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 预览弹窗 -->
+    <div class="modal-overlay" id="previewModal" style="display:none;" onclick="closePreview(event)">
+        <div class="modal-box modal-box-preview" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <span class="modal-title">预览协议</span>
+                <span class="modal-close" onclick="closePreviewModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="previewContent" style="max-height:60vh;overflow-y:auto;padding:20px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Picker遮罩层 -->
+    <div id="pickerOverlay" class="picker-overlay" onclick="closeAllDateTimePickers()"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script src="./js/app.js"></script>
+    <script>
+        // Mock 数据（与图片3完全一致）
+        const agreementMockData = [
+            { id: 1, type: 'service', typeName: '用户协议', version: 'v1.0.0', versionDesc: '初次创建', attachment: '-', hasAttachment: false, creator: '张三', createTime: '2025/3/31 13:01:48', updater: '李四维', updateTime: '' },
+            { id: 2, type: 'privacy', typeName: '隐私政策', version: 'v1.0.0', versionDesc: '初次创建', attachment: '查看', hasAttachment: true, creator: '张三', createTime: '2025/3/31 13:01:48', updater: '张三丰', updateTime: '2025/5/31 13:01:48' }
+        ];
+
+        let agreementCurrentData = [...agreementMockData];
+        let editingId = null;
+        let currentAddType = 'service';
+        let uploadedFile = null;
+
+        function renderAgreementTable() {
+            const tbody = document.getElementById('tableBody');
+            const totalCount = document.getElementById('totalCount');
+            totalCount.textContent = agreementCurrentData.length;
+            if (agreementCurrentData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#999;padding:40px;">暂无数据</td></tr>';
+                return;
+            }
+            tbody.innerHTML = agreementCurrentData.map((item) => `
+                <tr>
+                    <td>${item.typeName}</td>
+                    <td>${item.version}</td>
+                    <td>${item.versionDesc}</td>
+                    <td>${item.hasAttachment ? '<a class="action-link" onclick="viewAttachment(' + item.id + ')">查看</a>' : '-'}</td>
+                    <td>${item.creator}</td>
+                    <td>${item.createTime}</td>
+                    <td>${item.updater}</td>
+                    <td>${item.updateTime}</td>
+                    <td class="col-action">
+                        <a class="action-link" onclick="previewAgreement(${item.id})">预览</a>
+                        <span style="color:#d9d9d9;margin:0 4px;">|</span>
+                        <a class="action-link" onclick="editAgreement(${item.id})">编辑</a>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function viewAttachment(id) {
+            const item = agreementCurrentData.find(x => x.id === id);
+            if (item) {
+                showToast('预览附件：' + (item.version + '.pdf'));
+            }
+        }
+
+        function previewAgreement(id) {
+            const item = agreementCurrentData.find(x => x.id === id);
+            if (!item) return;
+            const content = document.getElementById('previewContent');
+            const typeName = item.typeName;
+            const version = item.version;
+            const updateTime = item.updateTime || item.createTime;
+            content.innerHTML = `
+                <h2 style="text-align:center;margin-bottom:24px;">${typeName}（${version}）</h2>
+                <p style="text-align:center;color:#999;margin-bottom:32px;">最近更新：${updateTime}</p>
+                <div style="line-height:1.8;font-size:14px;color:#333;">
+                    <p>本${typeName}由长城汽车有限公司（以下简称"我们"）制定。我们深知个人信息对您的重要性，并将按照法律法规要求，采取相应安全保护措施，致力于保护您的个人信息安全可控。</p>
+                    <p><strong>一、协议范围</strong></p>
+                    <p>本${typeName}适用于长城汽车辅助驾驶保障服务平台提供的各项服务。在使用我们的服务前，请您务必仔细阅读并透彻理解本${typeName}。</p>
+                    <p><strong>二、信息收集</strong></p>
+                    <p>我们将遵循正当、合法、必要的原则，按照如下方式收集和使用您的个人信息：</p>
+                    <p>1. 账户注册信息：当您注册长城汽车账户时，我们会收集您的手机号码、姓名等必要信息。</p>
+                    <p>2. 车辆信息：为提供辅助驾驶保障服务，我们会收集您的车辆VIN码、车牌号、车型等信息。</p>
+                    <p>3. 事故信息：在您申请享权时，我们会收集事故发生时间、地点、行车记录影像等。</p>
+                    <p><strong>三、信息使用</strong></p>
+                    <p>我们仅在为您提供服务所必需的范围内使用您的个人信息，不会用于其他用途。</p>
+                    <p><strong>四、信息共享</strong></p>
+                    <p>除法律法规规定或获得您的明确同意外，我们不会与任何第三方共享您的个人信息。</p>
+                    <p><strong>五、信息存储</strong></p>
+                    <p>我们仅在为您提供服务所必需的期间内保留您的个人信息，法律法规另有规定的除外。</p>
+                    <p><strong>六、您的权利</strong></p>
+                    <p>您有权访问、更正、删除您的个人信息，也有权撤回授权或注销账户。</p>
+                    <p><strong>七、联系我们</strong></p>
+                    <p>如您对本${typeName}有任何疑问，请通过以下方式联系我们：</p>
+                    <p>客服电话：400-xxx-xxxx</p>
+                    <p>邮箱：privacy@gwm.cn</p>
+                    <p style="margin-top:32px;">长城汽车有限公司</p>
+                    <p>${updateTime.split(' ')[0]}</p>
+                </div>
+            `;
+            document.getElementById('previewModal').style.display = 'flex';
+        }
+
+        function closePreview(e) {
+            if (e && e.target.id === 'previewModal') {
+                document.getElementById('previewModal').style.display = 'none';
+            }
+        }
+
+        function closePreviewModal() {
+            document.getElementById('previewModal').style.display = 'none';
+        }
+
+        function editAgreement(id) {
+            const item = agreementCurrentData.find(x => x.id === id);
+            if (!item) return;
+            editingId = id;
+            currentAddType = item.type;
+            document.getElementById('modalTitle').textContent = '编辑' + (item.type === 'service' ? '用户协议' : '隐私政策');
+            document.getElementById('addType').value = item.type;
+            document.getElementById('addVersion').value = item.version;
+            document.getElementById('addVersionDesc').value = item.versionDesc;
+            updateCharCount(document.getElementById('addVersionDesc'), 'descCount');
+            toggleTypeFields(item.type);
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function openAddAgreement(type) {
+            editingId = null;
+            currentAddType = type;
+            document.getElementById('modalTitle').textContent = type === 'service' ? '添加用户协议' : '添加隐私政策';
+            document.getElementById('addType').value = type;
+            document.getElementById('addVersion').value = '';
+            document.getElementById('addVersionDesc').value = '';
+            document.getElementById('addContent').value = '';
+            updateCharCount(document.getElementById('addVersionDesc'), 'descCount');
+            updateCharCount(document.getElementById('addContent'), 'contentCount');
+            uploadedFile = null;
+            document.getElementById('uploadPlaceholder').style.display = 'flex';
+            document.getElementById('uploadPreview').style.display = 'none';
+            toggleTypeFields(type);
+            document.getElementById('addModal').style.display = 'flex';
+        }
+
+        function toggleTypeFields(type) {
+            const fileRow = document.getElementById('versionFileRow');
+            if (type === 'privacy') {
+                fileRow.style.display = 'flex';
+            } else {
+                fileRow.style.display = 'none';
+            }
+        }
+
+        document.getElementById('addType').addEventListener('change', function() {
+            toggleTypeFields(this.value);
+        });
+
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+        }
+
+        function triggerFileInput() {
+            document.getElementById('fileInput').click();
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            uploadedFile = file;
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const preview = document.getElementById('uploadPreview');
+            const previewImg = document.getElementById('previewImg');
+            const fileName = document.getElementById('previewFileName');
+            placeholder.style.display = 'none';
+            preview.style.display = 'flex';
+            fileName.textContent = file.name;
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.style.display = 'none';
+            }
+        }
+
+        function removeFile(event) {
+            event.stopPropagation();
+            uploadedFile = null;
+            document.getElementById('uploadPlaceholder').style.display = 'flex';
+            document.getElementById('uploadPreview').style.display = 'none';
+            document.getElementById('fileInput').value = '';
+        }
+
+        function updateCharCount(el, countId) {
+            document.getElementById(countId).textContent = el.value.length;
+        }
+
+        function submitAdd() {
+            const type = document.getElementById('addType').value;
+            const version = document.getElementById('addVersion').value.trim();
+            const versionDesc = document.getElementById('addVersionDesc').value.trim();
+            if (!version) {
+                showToast('请输入版本号');
+                return;
+            }
+            if (editingId) {
+                const item = agreementCurrentData.find(x => x.id === editingId);
+                if (item) {
+                    item.version = version;
+                    item.versionDesc = versionDesc;
+                    item.updater = '管理员';
+                    item.updateTime = '2026/7/14 09:41:14';
+                }
+                showToast('编辑成功');
+            } else {
+                const now = '2026/7/14 09:41:14';
+                const newId = Math.max(...agreementCurrentData.map(x => x.id), 0) + 1;
+                const newItem = {
+                    id: newId,
+                    type: type,
+                    typeName: type === 'service' ? '用户协议' : '隐私政策',
+                    version: version,
+                    versionDesc: versionDesc,
+                    attachment: type === 'privacy' ? '查看' : '-',
+                    hasAttachment: type === 'privacy',
+                    creator: '管理员',
+                    createTime: now,
+                    updater: '管理员',
+                    updateTime: now
+                };
+                agreementCurrentData.unshift(newItem);
+                showToast('添加成功');
+            }
+            renderAgreementTable();
+            closeAddModal();
+        }
+
+        function doQuery() {
+            const type = document.getElementById('filterType').value;
+            const version = document.getElementById('filterVersion').value.trim().toLowerCase();
+            const creator = document.getElementById('filterCreator').value.trim();
+            const updater = document.getElementById('filterUpdater').value.trim();
+            agreementCurrentData = agreementMockData.filter(item => {
+                if (type && item.type !== type) return false;
+                if (version && !item.version.toLowerCase().includes(version)) return false;
+                if (creator && !item.creator.includes(creator)) return false;
+                if (updater && !item.updater.includes(updater)) return false;
+                return true;
+            });
+            renderAgreementTable();
+            showToast('查询完成，共 ' + agreementCurrentData.length + ' 条');
+        }
+
+        function doReset() {
+            document.getElementById('filterType').value = '';
+            document.getElementById('filterVersion').value = '';
+            document.getElementById('filterCreator').value = '';
+            document.getElementById('filterUpdater').value = '';
+            document.getElementById('createTimeRange').value = '';
+            document.getElementById('updateTimeRange').value = '';
+            agreementCurrentData = [...agreementMockData];
+            renderAgreementTable();
+        }
+
+        function prevPage() {
+            const btn = document.getElementById('currentPageBtn');
+            const cur = parseInt(btn.textContent);
+            if (cur > 1) {
+                btn.textContent = cur - 1;
+                document.getElementById('pageInput').value = cur - 1;
+            }
+        }
+
+        function nextPage() {
+            const btn = document.getElementById('currentPageBtn');
+            const cur = parseInt(btn.textContent);
+            btn.textContent = cur + 1;
+            document.getElementById('pageInput').value = cur + 1;
+        }
+
+        function closePage() {
+            if (window.parent && window.parent.closeTab) {
+                window.parent.closeTab('agreement_policy');
+            } else {
+                window.close();
+            }
+        }
+
+        // 初始化
+        renderAgreementTable();
+    </script>
+</body>
+</html>

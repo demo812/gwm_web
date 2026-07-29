@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <base href="./">
+    <title>长城辅助驾驶保障服务平台 - 权益海报</title>
+    <link rel="stylesheet" href="./css/style.css">
+
+    <script>
+        if (window.self !== window.top) {
+            document.documentElement.classList.add('in-iframe');
+        }
+    </script>
+    <style>
+        html.in-iframe #sidebar,
+        html.in-iframe .header,
+        html.in-iframe #tabBar,
+        html.in-iframe #sidebar-overlay,
+        html.in-iframe #welcomeBg,
+        html.in-iframe .welcome-bg.show {
+            display: none !important;
+        }
+        html.in-iframe #contentWrapper,
+        html.in-iframe #contentWrapper.hidden {
+            display: block !important;
+        }
+        html.in-iframe .main-wrapper {
+            margin-left: 0 !important;
+            margin-top: 0 !important;
+        }
+    </style>
+
+    <script>
+        if (window.self !== window.top) {
+            document.addEventListener('DOMContentLoaded', function() {
+                const sidebar = document.getElementById('sidebar');
+                const header = document.querySelector('.header');
+                const tabBar = document.getElementById('tabBar');
+                const mainWrapper = document.querySelector('.main-wrapper');
+                const sidebarOverlay = document.getElementById('sidebar-overlay');
+                const wrapper = document.getElementById('contentWrapper');
+                const welcome = document.getElementById('welcomeBg');
+                if (sidebar) sidebar.style.setProperty('display', 'none', 'important');
+                if (header) header.style.setProperty('display', 'none', 'important');
+                if (tabBar) tabBar.style.setProperty('display', 'none', 'important');
+                if (sidebarOverlay) sidebarOverlay.style.setProperty('display', 'none', 'important');
+                if (mainWrapper) {
+                    mainWrapper.style.setProperty('margin-left', '0', 'important');
+                    mainWrapper.style.setProperty('margin-top', '0', 'important');
+                }
+                if (wrapper) {
+                    wrapper.classList.remove('hidden');
+                    wrapper.style.setProperty('display', 'block', 'important');
+                }
+                if (welcome) {
+                    welcome.classList.remove('show');
+                    welcome.style.setProperty('display', 'none', 'important');
+                }
+                document.body.classList.remove('sidebar-collapsed');
+            });
+        }
+    </script>
+</head>
+<body>
+    <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-logo">
+            <img src="https://www.gwm.com.cn/favicon.ico" alt="logo" onerror="this.style.display='none'">
+            <span>长城汽车</span>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="gwm_web_dashboard.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 5"/></svg><span>数据概览</span></a></li>
+                <li class="has-submenu open">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="13" rx="2"/><path d="M8 21l4-3 4 3"/></svg><span>权益管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '权益车辆', 'gwm_web_equity_vehicle.html', 'equity_vehicle')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="9" rx="2"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg><span>权益车辆</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '车型配置', 'gwm_web_model_config.html', 'model_config')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>车型配置</span></a></li>
+                        <li class="active"><a href="gwm_web_poster.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 16"/></svg><span>权益海报</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>投保管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '预投记录', 'gwm_web_pre_insurance.html', 'pre_insurance')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>预投记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '投保记录', 'gwm_web_insurance_record.html', 'insurance_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15l2 2 4-4"/></svg><span>投保记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '异常记录', 'gwm_web_exception_record.html', 'exception_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><span>异常记录</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>保单管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return onMenuClick(this, false)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>保单记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return onMenuClick(this, false)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>下载记录</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="gwm_web_return.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg><span>退车管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>申请管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="gwm_web_application.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg><span>申请记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '协议政策', 'gwm_web_agreement_policy.html', 'agreement_policy')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span>协议政策</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><span>享权管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权记录', 'gwm_web_enjoyment_record.html', 'enjoyment_record')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="16" y2="14"/></svg><span>享权记录</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '享权说明', 'gwm_web_enjoyment_desc.html', 'enjoyment_desc')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>享权说明</span></a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3-3 3 3"/></svg><span>异常工单</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '申请工单', 'gwm_web_abnormal_workorder.html', 'abnormal_workorder')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/><line x1="8" y1="16" x2="12" y2="16"/></svg><span>申请工单</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="gwm_web_export.html" onclick="return onMenuClick(this, true)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg><span>导出管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span>存证管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据存证', 'gwm_web_data_evidence.html', 'data_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span>数据存证</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '报告存证', 'gwm_web_report_evidence.html', 'report_evidence')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>报告存证</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '数据校验', 'gwm_web_data_verify.html', 'data_verify')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>数据校验</span></a></li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '模型管理', 'gwm_web_model_manage.html', 'model_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><line x1="12" y1="7" x2="12" y2="17"/><line x1="7" y1="12" x2="17" y2="12"/></svg><span>模型管理</span></a></li>
+                <li class="has-submenu">
+                    <a href="javascript:void(0);" onclick="toggleSubmenu(this)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg><span>系统管理</span><i class="arrow">&#9662;</i></a>
+                    <ul class="submenu">
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '用户管理', 'gwm_web_user_manage.html', 'user_manage')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span>用户管理</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '角色权限', 'gwm_web_role_permission.html', 'role_permission')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>角色权限</span></a></li>
+                        <li><a href="javascript:void(0);" onclick="return onMenuClick(this, false)"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span>邮件通知</span></a></li>
+                    </ul>
+                </li>
+                <li><a href="javascript:void(0);" onclick="return openMenuTab(this, '日志管理', 'gwm_web_log_management.html', 'log_management')"><svg class="menu-icon" viewBox="0 0 24 24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>日志管理</span></a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <div class="main-wrapper">
+        <header class="header">
+            <div class="header-left-icons">
+                <button class="header-icon-btn" onclick="toggleSidebar()" title="收起菜单">&#9776;</button>
+                <button class="header-icon-btn" onclick="toggleFullscreen()" title="全屏显示">&#9974;</button>
+            </div>
+            <div class="header-title"></div>
+            <div class="header-user">
+                <span class="user-name">张三 zhangsan</span>
+                <i class="user-arrow">&#9662;</i>
+            </div>
+        </header>
+
+        <div class="tab-bar" id="tabBar">
+            <div class="tab-item" id="pageTab">
+                权益海报 <span class="tab-close" onclick="closePage()">&times;</span>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <div class="content-wrapper" id="contentWrapper">
+            <!-- 筛选区 -->
+            <div class="filter-section">
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>权益类型:</label>
+                        <select id="posterType">
+                            <option>全部</option>
+                            <option>增值包</option>
+                            <option>尊享包</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label>版本号:</label>
+                        <input type="text" id="versionNo" placeholder="请输入版本号">
+                    </div>
+                    <div class="filter-item">
+                        <label>创建人:</label>
+                        <input type="text" id="creator" placeholder="请输入创建人">
+                    </div>
+                </div>
+                <div class="filter-row filter-row-last">
+                    <div class="filter-item">
+                        <label>创建时间:</label>
+                        <input type="text" class="datetime-range-input" id="createTimeRange" placeholder="请选择 开始时间 - 结束时间" readonly onclick="openDateTimeRangePicker(this, 'createTimePicker')">
+                        <div class="datetime-range-picker" id="createTimePicker">
+                            <div class="picker-header">
+                                <span>选择时间范围</span>
+                                <span class="picker-close" onclick="closeDateTimePicker('createTimePicker')">&times;</span>
+                            </div>
+                            <div class="picker-body">
+                                <div class="picker-field">
+                                    <label>开始时间</label>
+                                    <input type="datetime-local" id="createTimeStart">
+                                </div>
+                                <div class="picker-field">
+                                    <label>结束时间</label>
+                                    <input type="datetime-local" id="createTimeEnd">
+                                </div>
+                            </div>
+                            <div class="picker-footer">
+                                <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('createTimeRange', 'createTimePicker')">清空</button>
+                                <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('createTimeRange', 'createTimePicker')">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>更新人:</label>
+                        <input type="text" id="updater" placeholder="请输入更新人">
+                    </div>
+                    <div class="filter-item">
+                        <label>更新时间:</label>
+                        <input type="text" class="datetime-range-input" id="updateTimeRange" placeholder="请选择 开始时间 - 结束时间" readonly onclick="openDateTimeRangePicker(this, 'updateTimePicker')">
+                        <div class="datetime-range-picker" id="updateTimePicker">
+                            <div class="picker-header">
+                                <span>选择时间范围</span>
+                                <span class="picker-close" onclick="closeDateTimePicker('updateTimePicker')">&times;</span>
+                            </div>
+                            <div class="picker-body">
+                                <div class="picker-field">
+                                    <label>开始时间</label>
+                                    <input type="datetime-local" id="updateTimeStart">
+                                </div>
+                                <div class="picker-field">
+                                    <label>结束时间</label>
+                                    <input type="datetime-local" id="updateTimeEnd">
+                                </div>
+                            </div>
+                            <div class="picker-footer">
+                                <button class="btn btn-sm btn-default" onclick="clearDateTimeRange('updateTimeRange', 'updateTimePicker')">清空</button>
+                                <button class="btn btn-sm btn-primary" onclick="confirmDateTimeRange('updateTimeRange', 'updateTimePicker')">确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-row" style="margin-top: 8px;">
+                    <div class="filter-item" style="flex: 0 0 auto; gap: 10px;">
+                        <button class="btn btn-primary" onclick="doPosterSearch()">查询</button>
+                        <button class="btn btn-default" onclick="resetPosterFilter()">重置</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-bar" style="justify-content: flex-end; border-bottom: none; margin-bottom: 0; padding-bottom: 8px;">
+                <button class="btn btn-primary" onclick="openAddPosterModal()">添加</button>
+            </div>
+
+            <!-- 数据表格 -->
+            <div class="table-wrapper">
+                <table class="data-table" id="posterTable" style="width: 100%; table-layout: fixed;">
+                    <colgroup>
+                        <col style="width: 5%;">
+                        <col style="width: 10%;">
+                        <col style="width: 10%;">
+                        <col style="width: 12%;">
+                        <col style="width: 8%;">
+                        <col style="width: 8%;">
+                        <col style="width: 15%;">
+                        <col style="width: 8%;">
+                        <col style="width: 15%;">
+                        <col style="width: 9%;">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>权益类型</th>
+                            <th>版本号</th>
+                            <th>版本说明</th>
+                            <th>权益图片</th>
+                            <th>创建人</th>
+                            <th>创建时间</th>
+                            <th>更新人</th>
+                            <th>更新时间</th>
+                            <th class="col-action">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="posterTableBody">
+                        <!-- 数据由JS生成 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            <div class="pagination" id="posterPagination">
+                <span class="pagination-total">共 2 条</span>
+                <select class="pagination-size">
+                    <option>10条/页</option>
+                    <option>20条/页</option>
+                    <option>50条/页</option>
+                </select>
+                <div class="pagination-pages">
+                    <button class="page-btn" onclick="goPosterPage(1)">&lt;</button>
+                    <button class="page-btn active" onclick="goPosterPage(1)">1</button>
+                    <button class="page-btn" onclick="goPosterPage(2)">&gt;</button>
+                </div>
+                <span class="pagination-jump">跳至 <input type="text" value="1"> 页</span>
+            </div>
+            </div>
+            <div class="welcome-bg" id="welcomeBg">
+                <div class="welcome-illustration">
+                    <div class="welcome-bg-screen"></div>
+                    <div class="welcome-bg-screen2"></div>
+                    <div class="welcome-screen">
+                        <div class="welcome-screen-bar"></div>
+                        <div class="welcome-screen-bar2"></div>
+                        <div class="welcome-screen-bar3"></div>
+                    </div>
+                    <div class="welcome-deco welcome-deco-1">&#10022;</div>
+                    <div class="welcome-deco welcome-deco-2">&#9679;</div>
+                    <div class="welcome-deco welcome-deco-3">&#11201;</div>
+                    <div class="welcome-deco welcome-deco-4">&#10010;</div>
+                    <div class="welcome-deco welcome-deco-5">&#11200;</div>
+                </div>
+                <div class="welcome-text">
+                    <div class="welcome-line"></div>
+                    <span>WELCOME</span>
+                    <div class="welcome-line"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 添加权益海报弹窗 -->
+    <div id="addPosterModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeAddPosterModal()"></div>
+        <div class="modal-content" style="width: 520px; max-height: 600px;">
+            <div class="modal-header">
+                <h3>添加权益海报</h3>
+                <span class="modal-close" onclick="closeAddPosterModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="addPosterForm" onsubmit="return false;">
+                    <div class="form-row">
+                        <div class="form-item form-item-required">
+                            <label style="width: 130px; text-align: right; padding-right: 12px; flex-shrink: 0;">权益类型</label>
+                            <select id="ap-type" style="width: 340px; height: 32px;">
+                                <option value="">全部</option>
+                                <option value="1">增值包</option>
+                                <option value="2">尊享包</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item form-item-required">
+                            <label style="width: 130px; text-align: right; padding-right: 12px; flex-shrink: 0;">版本号</label>
+                            <input type="text" id="ap-version" placeholder="请输入版本号" style="width: 340px; height: 32px;">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item form-item-required">
+                            <label style="width: 130px; text-align: right; padding-right: 12px; flex-shrink: 0;">版本说明</label>
+                            <div class="textarea-wrap" style="width: 340px;">
+                                <textarea id="ap-desc" rows="3" maxlength="200" placeholder="请输入版本说明" oninput="updatePosterCharCount(this)" style="width: 340px; min-height: 80px; resize: vertical;"></textarea>
+                                <span class="char-count" style="right: 8px;"><span id="posterCharCount">0</span>/200</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item form-item-required">
+                            <label style="width: 130px; text-align: right; padding-right: 12px; flex-shrink: 0;">海报图片</label>
+                            <div class="upload-area" id="posterUploadArea" onclick="document.getElementById('ap-poster').click()" style="width: 128px; height: 128px; border: 1px dashed #dcdfe6; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fafafa;">
+                                <input type="file" id="ap-poster" accept="image/*" style="display:none;" onchange="onPosterUpload(this)">
+                                <div class="upload-placeholder" id="posterPlaceholder" style="display: flex; flex-direction: column; align-items: center; color: #999;">
+                                    <i class="upload-icon" style="font-size: 24px; margin-bottom: 4px;">+</i>
+                                </div>
+                                <div class="upload-preview" id="posterPreview" style="display:none; width: 100%; height: 100%; align-items: center; justify-content: center; position: relative;">
+                                    <img id="posterPreviewImg" style="max-width: 100%; max-height: 100%; object-fit: contain;" src="" alt="">
+                                    <span class="file-remove" onclick="event.stopPropagation();removePosterImage()" style="position: absolute; top: 2px; right: 2px; width: 20px; height: 20px; background: rgba(0,0,0,0.5); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; line-height: 1;">&times;</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="justify-content: flex-end; gap: 16px;">
+                <button class="btn btn-default" onclick="closeAddPosterModal()">取消</button>
+                <button class="btn btn-primary" onclick="submitAddPoster()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Picker遮罩层 -->
+    <div id="pickerOverlay" class="picker-overlay" onclick="closeAllDateTimePickers()"></div>
+
+    <!-- Toast提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script src="./js/app.js"></script>
+    <script>
+        // 模拟数据
+        const posterData = [
+            {
+                id: 1,
+                type: '增值包',
+                version: 'V1.0',
+                desc: '查看',
+                image: '查看',
+                creator: '丁杰',
+                createTime: '2025-07-10 11:55:36',
+                updater: '丁杰',
+                updateTime: '2026-03-24 16:33:04'
+            },
+            {
+                id: 2,
+                type: '尊享包',
+                version: 'V1.1',
+                desc: '查看',
+                image: '查看',
+                creator: '李燕杰',
+                createTime: '2025-07-07 16:43:00',
+                updater: '张俊伟',
+                updateTime: '2026-03-04 13:35:29'
+            }
+        ];
+
+        function renderPosterTable() {
+            const tbody = document.getElementById('posterTableBody');
+            tbody.innerHTML = posterData.map((item, index) => `
+                <tr>
+                    <td>${item.id}</td>
+                    <td>${item.type}</td>
+                    <td>${item.version}</td>
+                    <td><span class="action-link" onclick="showToast('查看版本说明')">${item.desc}</span></td>
+                    <td><span class="action-link" onclick="showToast('查看权益图片')">${item.image}</span></td>
+                    <td>${item.creator}</td>
+                    <td>${item.createTime}</td>
+                    <td>${item.updater}</td>
+                    <td>${item.updateTime}</td>
+                    <td class="col-action"><span class="action-link" onclick="showToast('编辑')">编辑</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function openAddPosterModal() {
+            document.getElementById('addPosterModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeAddPosterModal() {
+            document.getElementById('addPosterModal').style.display = 'none';
+            document.body.style.overflow = '';
+            document.getElementById('addPosterForm').reset();
+            document.getElementById('posterCharCount').textContent = '0';
+            removePosterImage();
+        }
+
+        function updatePosterCharCount(textarea) {
+            const count = textarea.value.length;
+            document.getElementById('posterCharCount').textContent = count;
+        }
+
+        function onPosterUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('posterPreviewImg').src = e.target.result;
+                    document.getElementById('posterPlaceholder').style.display = 'none';
+                    document.getElementById('posterPreview').style.display = 'flex';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removePosterImage() {
+            document.getElementById('ap-poster').value = '';
+            document.getElementById('posterPlaceholder').style.display = 'flex';
+            document.getElementById('posterPreview').style.display = 'none';
+            document.getElementById('posterPreviewImg').src = '';
+        }
+
+        function submitAddPoster() {
+            const type = document.getElementById('ap-type').value;
+            const version = document.getElementById('ap-version').value.trim();
+            const desc = document.getElementById('ap-desc').value.trim();
+            const poster = document.getElementById('ap-poster').value;
+
+            if (!type) { showToast('请选择权益类型'); return; }
+            if (!version) { showToast('请输入版本号'); return; }
+            if (!desc) { showToast('请输入版本说明'); return; }
+            if (!poster) { showToast('请上传海报图片'); return; }
+
+            showToast('添加成功');
+            closeAddPosterModal();
+        }
+
+        function doPosterSearch() {
+            showToast('查询成功');
+        }
+
+        function resetPosterFilter() {
+            document.getElementById('posterType').selectedIndex = 0;
+            document.getElementById('versionNo').value = '';
+            document.getElementById('creator').value = '';
+            document.getElementById('createTimeRange').value = '';
+            document.getElementById('updater').value = '';
+            document.getElementById('updateTimeRange').value = '';
+            showToast('已重置');
+        }
+
+        function goPosterPage(page) {
+            showToast('跳转到第 ' + page + ' 页');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderPosterTable();
+        });
+    </script>
+</body>
+</html>
